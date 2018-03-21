@@ -6,6 +6,7 @@
 
 using namespace std;
 
+
 enum STATUS { DR, SR, PR };
 //Three modes: driving, searching for parking, parking
 
