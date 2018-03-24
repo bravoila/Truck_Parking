@@ -56,9 +56,9 @@ int main() {
     /*Parameters*/
     int i =0;                               // Iterate for Truck combined with n
     int j =0;                               // Iterate for RestArea combined with m
-    int L = 600;                            //Total simulation distance unit in mile
-    int n = 10;                             //number of trucks to simulate
-    int m = 5;                              // number of rest area
+    int L = 1000;                            //Total simulation distance unit in mile
+    int n = 1000;                             //number of trucks to simulate
+    int m = 20;                              // number of rest area
     int k = 24;                             // parameter to generate start time,a day is 24h
     int Violation = 0;                      //potential number of trucks violate the regulation
     double t = 0;                           // Time eclipsed
@@ -95,25 +95,25 @@ int main() {
         //Truck[i].WorkTime = k*u(e);
         Truck[i].speed = 70;  //assume speed is 70 mph
         Truck[i].StartT = k*u(e); // in the future u(e) can be repleced by traffic flow function
-        Truck[i].BP1 = Truck[i].StartT + k*u(e); // ku(e) is the first part driving time
+        Truck[i].BP1 = Truck[i].StartT + 7*u(e)+1; // ku(e) is the first part driving time
         // allocate the rest area to decide the tru BP1
         // truck cannot park randomly
         a = int(floor((Truck[i].BP1 - Truck[i].StartT) * Truck[i].speed / Spacing));
         cout<< a<<endl;
         //update BP1 value
-        Truck[i].BP1 = Truck[i].StartT + RestArea[a].location/ Truck[i].speed;
+        Truck[i].BP1 = Truck[i].StartT + RestArea[a].location / Truck[i].speed;
         // short rest time
-        Truck[i].RestShort = k*u(e);
+        Truck[i].RestShort = 1*u(e)+0.5;
         //similar to BP1
-        Truck[i].BP2 = Truck[i].BP1 + Truck[i].RestShort + k*u(e);
+        Truck[i].BP2 = Truck[i].BP1 + Truck[i].RestShort + (Reg.MaxWL - Truck[i].BP1 + Truck[i].StartT )*u(e) +0.5;
         a = a + int(floor((Truck[i].BP2 - Truck[i].BP1 - Truck[i].RestShort ) * Truck[i].speed / Spacing));
+        cout<< a<<endl;
         Truck[i].BP2 = Truck[i].BP1 + Truck[i].RestShort + RestArea[a].location/ Truck[i].speed;
-        Truck[i].RestLong = k*u(e);
+        Truck[i].RestLong = 12*u(e)+0.5;
         Truck[i].BufferTime = 0;
 
         //Truck.stu[i] = DE;
-        cout<< "Truck number "<<i<<"; Time "<<Truck[i].BP2<<endl;
-        //cout<<"Speed  "<<Truck[i].speed<<endl;
+        cout<< "Truck number "<<i<<"; Time "<<Truck[i].BP2<<endl;//cout<<"Speed  "<<Truck[i].speed<<endl;
 
 
     }
