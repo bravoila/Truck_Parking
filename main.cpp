@@ -39,6 +39,7 @@ struct RestAreaStru
     int location;       //rest area location
 };
 
+
 struct RegulationStru
 {
     int MaxWS;   //Maximum working hours until interruption by short break regulation
