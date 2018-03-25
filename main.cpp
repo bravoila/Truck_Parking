@@ -65,15 +65,13 @@ int main() {
 
     int a = 0;                           // store the RestArea number of SHORT rest
     int b = 0;                           // store the RestArea number of LONG rest
-    int s1 = 0;                         // store the entering time of SHORT and Long rest
+    int s1 = 0;                         // store the entering time of SHORT and LONG rest
     int s2 = 0;                         // store the leaving time number of SHORT LONG rest, in 1 hour interval
 
     int k = 24;                             // parameter to generate start time,a day is 24h
     int Violation = 0;                      //potential number of trucks violate the regulation
     int t = 0;                           // time point for print out
     vector<double> LDT = {0};               //Legal driving time
-    int timenow = 0;
-    double LegalTimeLeft = 0;               // Legal driving time left
     /*initialization*/
     /* Creat rest area*/
     double Spacing = 1;                     // Rest area spacing interval
@@ -97,13 +95,11 @@ int main() {
 
     TruckPropStru Truck[n] = {{0,0,0,0,0,0,0,DE}};
 
-    double LDTT = Reg.MaxWS;
-
     for ( i = 0; i < n ; i++)
     {
         //Truck[i].WorkTime = k*u(e);
         Truck[i].speed = 70;  //assume speed is 70 mph
-        Truck[i].StartT = k*u(e); //Arrival function, in the future u(e) can be repleced by traffic flow function
+        Truck[i].StartT = k*u(e); //Arrival function, in the future u(e) can be replaced by traffic flow function
         Truck[i].BP1 = Truck[i].StartT + 7*u(e)+1; // ku(e) is the first part driving time
         // allocate the rest area to decide the tru BP1
         // truck cannot park randomly
