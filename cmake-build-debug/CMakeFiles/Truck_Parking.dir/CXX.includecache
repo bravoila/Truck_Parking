@@ -1,0 +1,28 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/bravoila/CLionProjects/Truck_Parking/main.cpp
+iostream
+-
+vector
+-
+stdlib.h
+-
+ctime
+-
+random
+-
+cmath
+-
+fstream
+-
+string
+-
+iomanip
+-
+
