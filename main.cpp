@@ -4,7 +4,9 @@
 #include <ctime>
 #include <random>
 #include <cmath>
-
+#include <fstream>
+#include <string>
+#include <iomanip>
 using namespace std;
 
 
@@ -51,10 +53,22 @@ struct RegulationStru
 /*################################  Main Function   ##################################*/
 
 int main() {
+    ofstream outFile;
     //generate random numbers
     uniform_real_distribution<double> u(0, 1);          // 定义一个范围为0~1的浮点数分布类型
     default_random_engine e;                            // 定义一个随机数引擎
     /*float a = 8*u(e);*/
+    //std::normal_distribution<double> distribution(5.0,2.0);   //normal distribution
+    std::lognormal_distribution<double> lgn1(2,0.5);  // Log-normal distribution,use for arrival
+    std::lognormal_distribution<double> lgn2(0.05,0.2);  // Log-normal distribution,use for short rest time
+
+    //https://www.medcalc.org/manual/log-normal_distribution_functions.php
+    std::poisson_distribution<int> pos(2.3);   //Poisson distribution
+
+    std::normal_distribution<double> nor1(6,0.7);   //Poisson distribution, use for driving time
+    std::normal_distribution<double> nor2(2,0.7);   //Poisson distribution, use for driving time
+    //https://homepage.divms.uiowa.edu/~mbognar/applets/normal.html
+
 
     /*Parameters*/
     int i =0;                               // Iterate for Truck combined with n
@@ -69,7 +83,7 @@ int main() {
     int s2 = 0;                         // store the leaving time number of SHORT LONG rest, in 1 hour interval
 
     int k = 24;                             // parameter to generate start time,a day is 24h
-    int Violation = 0;                      //potential number of trucks violate the regulation
+    int Violation = 0;                      //?potential number of trucks violate the regulation
     int t = 0;                           // time point for print out
     vector<double> LDT = {0};               //Legal driving time
     /*initialization*/
@@ -99,30 +113,27 @@ int main() {
     {
         //Truck[i].WorkTime = k*u(e);
         Truck[i].speed = 70;  //assume speed is 70 mph
-        Truck[i].StartT = k*u(e); //Arrival function, in the future u(e) can be replaced by traffic flow function
-        Truck[i].BP1 = Truck[i].StartT + 7*u(e)+1; // ku(e) is the first part driving time
+        Truck[i].StartT = abs(lgn1(e)); //Arrival function, in the future u(e) can be replaced by traffic flow function
+        Truck[i].BP1 = Truck[i].StartT + nor1(e); // ku(e) is the first part driving time
         // allocate the rest area to decide the tru BP1
         // truck cannot park randomly
         a = int(floor((Truck[i].BP1 - Truck[i].StartT) * Truck[i].speed / Spacing));
 
         //update BP1 value
-        Truck[i].BP1 = Truck[i].StartT + RestArea[a].location / Truck[i].speed;
-        // short rest time
-        Truck[i].RestShort = 1*u(e)+0.5;// rest time distribution
         //similar to BP1
 
         s1 = int(floor(Truck[i].BP1)) % 24;//Time truck enters the RestArea[a], round down
-        s2 = int(ceil(Truck[i].BP1 + Truck[i].RestShort)) %24;//Time truck leaves the RestArea[a], round up
+        s2 = int(ceil(Truck[i].BP1 + Truck[i].RestShort)) %24;//Time
+        Truck[i].BP1 = Truck[i].StartT + RestArea[a].location / Truck[i].speed;
+        // short rest time
+        Truck[i].RestShort = lgn2(e);// rest time distribution truck leaves the RestArea[a], round up
 
         while((s1 < s2) || (s1 == s2) ) {
             RestArea[a].Snum[s1] = RestArea[a].Snum[s1] + 1;
             s1 ++;
         }
 
-
-
-        Truck[i].BP2 = Truck[i].BP1 + Truck[i].RestShort + min((Reg.MaxWL - Truck[i].BP1 + Truck[i].StartT )*u(e) +0.5
-                , 7*u(e)+1);
+        Truck[i].BP2 = Truck[i].BP1 + Truck[i].RestShort + min((Reg.MaxWL - Truck[i].BP1 + Truck[i].StartT ), nor2(e));
         // the latter is the same as driving time function in the first part
         // truck driver driving time can be less than the regulation
 
@@ -154,12 +165,34 @@ int main() {
         cout<< Truck[i].RestLong<<endl;
 
     }
+// output to a txt file
+    outFile.open("Truck.txt");
+
+    outFile << std::setprecision(2) << std::fixed; // keep two decimals
+    //print title
+    outFile <<"Truck Num   StartT   BP1   ShortRest   FirstParking    BP2       SecondParking   LOngRest    \n";
+    //print truck data
+    for( i = 0; i < n; i++)
+    {
+
+    outFile <<"Truck "<<i<<"    "<< Truck[i].StartT <<"     "<<Truck[i].BP1<<"  "<< Truck[i].RestShort<<"           "<<a<<"            "<<Truck[i].BP2<<"      "<<b<<"              "<<Truck[i].RestLong<<endl;
+
+    }
+    outFile.close();
+
+    outFile.open("RestArea.txt");
+
+    outFile << " Number of trucks in short rest " <<endl;
+    outFile << " RestArea    Time    Number of turcks"<<endl;
 
     for( j = 0; j <m ; j++)
     {
-        for ( t = 0; t<2; t++)
+        outFile <<"Rest Area " << j<<"\n"<< endl;
+
+        for ( t = 0; t<25; t++)
         {
-            cout << " Number of trucks in short rest in rest area " << j<<"at time "<<t << " is " << RestArea[j].Snum[t] << endl;
+
+            outFile << "     "<<t << "       " << RestArea[j].Snum[t] << endl;
             //cout << t << " Number of trucks in long rest in rest area " << j << " is " << RestArea[j].Lnum[t] << endl;
         }
     }
