@@ -74,14 +74,27 @@ double fun1(double x)       //标准正态分布 for test purposes
     return coefficient*exp(index);
 }
 
-double EQfun(double x)       //标准正态分布 for test purposes
+
+
+double Nexp_CDF(double lambda1, double x, double v)        // pdf of negative exp, λ e−λx
 {
-    const int u=0;
-    const int b=1;
-    const double Pi=3.14159;
-    double coefficient=1/(sqrt(2*Pi)*b);
-    double index=-((x-u)*(x-u)/(2*b*b));
-    return coefficient*exp(index);
+    return lambda1 * exp(- lambda1 *x/v);
+}
+
+
+double Nexp_PDF(double lambda2, double x, double v)        // CDF of negative exp, 1 − e−λx
+{
+    return 1 - exp(- lambda2 *x/v);
+}
+
+double Alpha(double t, double v)
+{
+    return 100 + 50*sin(t);
+}
+
+double  funq1(double lambda1, double lambda2, double t,double x, double v)
+{
+    return lambda1*Alpha(t,v)*( Nexp_PDF(lambda1,x,v) - Nexp_PDF(lambda2,x,v))/((lambda1 -lambda2)*v);
 }
 
 
@@ -98,9 +111,7 @@ double EQfun(double x)       //标准正态分布 for test purposes
 
 int main() {
 
-    std::exponential_distribution<double> nexp(3.5); // for T0
-    // negative expectational lambda*e^(-lambda x) x>0
-    // for T1
+
     int x =1;
     Position PosX[x];
     double Q = 0;
@@ -109,7 +120,19 @@ int main() {
     double CExit = 0;
     double time = 1;
     int N = 10000;      //interval
+    double PT1 = 3.5;     //parameter for T1
+    double T1_pb = 0;
+    double L =1;
+    double v =1;
+    double t = L/v;
+
+
     double inf = std::numeric_limits<double>::infinity(); //????
+    std::exponential_distribution<double> nexp(PT1); // for T0
+    // negative expectational lambda*e^(-lambda x) x>0
+    // for T1
+/*
+    T1_pb = integral(nexp, 0, t, N);
     Q = integral(EQfun, sigma[t], time, N);
     H = integral(EHfun, -inf, sigma[t], N);
     Q = integral(fun1, -inf, sigma[t], N);
@@ -118,6 +141,17 @@ int main() {
 
     cout.precision(7);
     cout << integral(fun1, -99, 99, 10000);
+*/
+
+    cout.precision(7);
+    //funq(double lambda1, double lambda2, double t,double x, double v)
+    for( double i = 0; i<100.0;  i = i + 0.5)
+    {
+        cout<<funq1(5, 2,i,4,3)<<endl;
+
+    }
+
+
 
     return 0;
 }
