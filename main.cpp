@@ -116,9 +116,12 @@ int main() {
         Truck[i].StartT = abs(lgn1(e)); //Arrival function, in the future u(e) can be replaced by traffic flow function
         Truck[i].BP1 = Truck[i].StartT + nor1(e); // ku(e) is the first part driving time
         // allocate the rest area to decide the tru BP1
-        // truck cannot park randomly
+        // truck cannot park randomly, a is actually the last RestArea number
+        // the driver can park in order to obey HOS
         a = int(floor((Truck[i].BP1 - Truck[i].StartT) * Truck[i].speed / Spacing));
-
+        //consider preference here
+        //the driver can park at the place he prefer in [0,a], choose the preferrd RestArea
+        // if the variance of the preference is below thehold, then choose the last RestArea (a)
         //update BP1 value
         //similar to BP1
 
