@@ -64,29 +64,30 @@ int main() {
     //https://www.medcalc.org/manual/log-normal_distribution_functions.php
     std::poisson_distribution<int> pos(2.3);   //Poisson distribution
 
-    std::normal_distribution<double> nor1(6,0.7);   //Poisson distribution, use for driving time
-    std::normal_distribution<double> nor2(2,0.7);   //Poisson distribution, use for driving time
+    std::normal_distribution<double> nor1(6,0.7);   //Normal distribution, use for driving time
+    std::normal_distribution<double> nor2(2,0.7);   //Normal distribution, use for driving time
     //https://homepage.divms.uiowa.edu/~mbognar/applets/normal.html
 
 
     /*Parameters*/
     int i =0;                               // Iterate for Truck combined with n
     int j =0;                               // Iterate for RestArea combined with m
-    int L = 1000;                            //Total simulation distance unit in mile
-    int n = 10;                           //number of trucks to simulate
-    int m = 20;                              // number of rest area
+    int L = 1000;                           //Total simulation distance unit in mile
+    int n = 10;                             //number of trucks to simulate
+    int m = 20;                             // number of rest area
 
-    int a = 0;                           // store the RestArea number of SHORT rest
-    int b = 0;                           // store the RestArea number of LONG rest
+    int a = 0;                          // store the RestArea number of SHORT rest
+    int b = 0;                          // store the RestArea number of LONG rest
     int s1 = 0;                         // store the entering time of SHORT and LONG rest
     int s2 = 0;                         // store the leaving time number of SHORT LONG rest, in 1 hour interval
 
     int k = 24;                             // parameter to generate start time,a day is 24h
     int Violation = 0;                      //?potential number of trucks violate the regulation
-    int t = 0;                           // time point for print out
+    int t = 0;                              // time point for print out
     vector<double> LDT = {0};               //Legal driving time
     /*initialization*/
     /* Creat rest area*/
+
     double Spacing = 1;                     // Rest area spacing interval
     int TimeInv = 1;                        // Time interval
     Spacing = L/m;
