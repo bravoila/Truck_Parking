@@ -9,7 +9,6 @@
 #include <iomanip>
 using namespace std;
 
-
 enum STATUS { DE, DR, SR, PR }; // DE is the default
 //Three modes: driving, searching for parking, parking
 
