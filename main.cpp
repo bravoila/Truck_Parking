@@ -16,6 +16,7 @@ struct TruckPropStru
 {
 
     double speed;           //Driving speed
+    double DRbefore;        //Driving time before entering the highway
     double StartT;          //Time entering the highway
     double BP1;             //Time when driver decides to take the short rest
     double RestShort;       //Duration of short break
@@ -47,6 +48,16 @@ struct RegulationStru
     int MaxWL;    //Maximum working hours until interruption by long break regulation
 
 };
+
+double Prefer(int number, double legalDrivingHours)        // preference, can summerize from data
+                                                              // consider service and legal driving hour left by far
+{
+    int v = 0;  //preference
+    double beta1 = 1;
+    double beta2 = 1;
+    double service[20] = {10};
+    return beta1 * service[number] + beta2 * legalDrivingHours;
+}
 
 
 /*################################  Main Function   ##################################*/
@@ -84,7 +95,8 @@ int main() {
     int k = 24;                             // parameter to generate start time,a day is 24h
     int Violation = 0;                      //?potential number of trucks violate the regulation
     int t = 0;                              // time point for print out
-    vector<double> LDT = {0};               //Legal driving time
+    double legal = 0;                       // record legal driving time
+    vector<double> LDH = {};               //Legal driving time
     /*initialization*/
     /* Creat rest area*/
 
@@ -107,23 +119,36 @@ int main() {
 
     RegulationStru Reg = {8,11};     // USDOT HOS Regulation
 
-    TruckPropStru Truck[n] = {{0,0,0,0,0,0,0,DE}};
+    TruckPropStru Truck[n] = {{0,0,0,0,0,0,0,0,DE}};
 
     for ( i = 0; i < n ; i++)
     {
         //Truck[i].WorkTime = k*u(e);
         Truck[i].speed = 70;  //assume speed is 70 mph
+        Truck[i].DRbefore = 3*u(e) ;// Driving time before entering the highway
         Truck[i].StartT = abs(lgn1(e)); //Arrival function, in the future u(e) can be replaced by traffic flow function
-        Truck[i].BP1 = Truck[i].StartT + nor1(e); // ku(e) is the first part driving time
+        legal = min((Reg.MaxWS - Truck[i].DRbefore ), nor1(e));// nor1(e) is the first part driving time
+        LDH.push_back(legal);          // add to LDH vector
+        Truck[i].BP1 = Truck[i].StartT +  legal;
+
         // allocate the rest area to decide the tru BP1
         // truck cannot park randomly, a is actually the last RestArea number
         // the driver can park in order to obey HOS
-        a = int(floor((Truck[i].BP1 - Truck[i].StartT) * Truck[i].speed / Spacing));
+        a = int(floor( legal * Truck[i].speed / Spacing)) ;
+
         //consider preference here
-        //the driver can park at the place he prefer in [0,a], choose the preferrd RestArea
+        //the driver can park at the place he prefer in [0,a], choose the preferred RestArea
         // if the variance of the preference is below thehold, then choose the last RestArea (a)
         //update BP1 value
         //similar to BP1
+        // a1 is nearest RestArea
+
+        for(k = 1; k < a;k++)
+        {
+            cout<<Prefer(k,legal)<<endl;
+
+        }
+
 
         s1 = int(floor(Truck[i].BP1)) % 24;//Time truck enters the RestArea[a], round down
         s2 = int(ceil(Truck[i].BP1 + Truck[i].RestShort)) %24;//Time
