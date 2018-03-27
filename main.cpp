@@ -143,9 +143,12 @@ int main() {
         //similar to BP1
         // a1 is nearest RestArea
 
+        // working tomorrow here
         for(k = 1; k < a;k++)
         {
             cout<<Prefer(k,legal)<<endl;
+
+
 
         }
 
