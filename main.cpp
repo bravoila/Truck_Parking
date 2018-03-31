@@ -100,7 +100,7 @@ int main() {
     /*initialization*/
     /* Creat rest area*/
 
-    double Spacing = 1;                     // Rest area spacing interval
+    double Spacing = 1.0;                     // Rest area spacing interval
     int TimeInv = 1;                        // Time interval
     Spacing = L/m;
 
