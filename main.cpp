@@ -19,8 +19,10 @@ struct TruckPropStru
     double DRbefore;        //Driving time before entering the highway
     double StartT;          //Time entering the highway
     double BP1;             //Time when driver decides to take the short rest
+    int RS;                  // Rest area number for short rest
     double RestShort;       //Duration of short break
     double BP2;             //Time when driver decides to take the long rest
+    int RL;                  // Rest area number for short rest
     double RestLong;        //Duration of long break
     double BufferTime;      //Buffer time
     STATUS stu;
@@ -28,7 +30,6 @@ struct TruckPropStru
 //start here tomorrow #############//double arrival;     //arrival time
 // entrance/exit, enter from reset area
 };
-
 
 struct RestAreaStru
 {
@@ -41,7 +42,6 @@ struct RestAreaStru
     int location;       //rest area location
 };
 
-
 struct RegulationStru
 {
     int MaxWS;   //Maximum working hours until interruption by short break regulation
@@ -49,17 +49,35 @@ struct RegulationStru
 
 };
 
-double Prefer(int number, double legalDrivingHours)        // preference, can summerize from data
-                                                              // consider service and legal driving hour left by far
+
+int PreferS(int farest)        // preference,return the preferred parking number, can summerize from data
+// consider service and legal driving hour left by far
 {
-    int v = 0;  //preference
-    double beta1 = 1;
-    double beta2 = 1;
-    double service[20] = {10};
-    return beta1 * service[number] + beta2 * legalDrivingHours;
+    int temp = farest;                      // store the preferred restarea in the iteration
+    double Score[20] = {6};      //score of each rest area
+    for(int num = 1; num < farest; num++)
+    {
+        if(Score[num] > Score[farest]) {
+            temp = num;
+        }
+    }
+    return temp;
 }
 
-
+int PreferL(int local, int farest)        // preference,return the preferred parking number, can summerize from data
+// truck just drive out from rest area local
+// consider service and legal driving hour left by far
+{
+    int temp = farest;                      // store the preferred restarea in the iteration
+    double Score[20] = {6};      //Score[m] m value is the same, score of each rest area
+    for(int num = local + 1; num < farest; num++)
+    {
+        if(Score[num] > Score[farest]) {
+            temp = num;
+        }
+    }
+    return temp;
+}
 /*################################  Main Function   ##################################*/
 
 int main() {
@@ -78,7 +96,6 @@ int main() {
     std::normal_distribution<double> nor1(6,0.7);   //Normal distribution, use for driving time
     std::normal_distribution<double> nor2(2,0.7);   //Normal distribution, use for driving time
     //https://homepage.divms.uiowa.edu/~mbognar/applets/normal.html
-
 
     /*Parameters*/
     int i =0;                               // Iterate for Truck combined with n
@@ -102,7 +119,7 @@ int main() {
 
     double Spacing = 1.0;                     // Rest area spacing interval
     int TimeInv = 1;                        // Time interval
-    Spacing = L/m;
+    Spacing = double(L/m);
 
     RestAreaStru RestArea[m] ={{0}};
 
@@ -119,7 +136,7 @@ int main() {
 
     RegulationStru Reg = {8,11};     // USDOT HOS Regulation
 
-    TruckPropStru Truck[n] = {{0,0,0,0,0,0,0,0,DE}};
+    TruckPropStru Truck[n] = {{0,0,0,0,0,0,0,0,0,0,DE}};
 
     for ( i = 0; i < n ; i++)
     {
@@ -134,31 +151,24 @@ int main() {
         // allocate the rest area to decide the tru BP1
         // truck cannot park randomly, a is actually the last RestArea number
         // the driver can park in order to obey HOS
-        a = int(floor( legal * Truck[i].speed / Spacing)) ;
+        a = int(floor( legal * Truck[i].speed / Spacing)) ; //farest rest area the trucker can reach legally
 
-        //consider preference here
+        //consider preference here or another function in the header file
+
         //the driver can park at the place he prefer in [0,a], choose the preferred RestArea
-        // if the variance of the preference is below thehold, then choose the last RestArea (a)
+        //if the variance of the preference is below threshold, then choose the farest RestArea (a)
         //update BP1 value
         //similar to BP1
-        // a1 is nearest RestArea
-
-        // working tomorrow here
-        for(k = 1; k < a;k++)
-        {
-            cout<<Prefer(k,legal)<<endl;
-
-
-
-        }
-
+        //a is nearest RestArea
+        Truck[i].RS = PreferS(a);     //rest area for short rest
 
         s1 = int(floor(Truck[i].BP1)) % 24;//Time truck enters the RestArea[a], round down
-        s2 = int(ceil(Truck[i].BP1 + Truck[i].RestShort)) %24;//Time
+        s2 = int(ceil(Truck[i].BP1 + Truck[i].RestShort)) %24;//Time the truck leave the rest area, round up
         Truck[i].BP1 = Truck[i].StartT + RestArea[a].location / Truck[i].speed;
         // short rest time
         Truck[i].RestShort = lgn2(e);// rest time distribution truck leaves the RestArea[a], round up
 
+        //number of short term parking static
         while((s1 < s2) || (s1 == s2) ) {
             RestArea[a].Snum[s1] = RestArea[a].Snum[s1] + 1;
             s1 ++;
@@ -168,14 +178,14 @@ int main() {
         // the latter is the same as driving time function in the first part
         // truck driver driving time can be less than the regulation
 
-
         b = a + int(floor((Truck[i].BP2 - Truck[i].BP1 - Truck[i].RestShort ) * Truck[i].speed / Spacing));
-
+        //farest rest area trucker can reach
+        Truck[i].RL = PreferL(a,b);
         Truck[i].BP2 = Truck[i].BP1 + Truck[i].RestShort + RestArea[b].location/ Truck[i].speed;
-        Truck[i].RestLong = 12*u(e)+0.5;
+        Truck[i].RestLong = 4 + 12*u(e)+0.5;
 
-        s1 = int(floor(Truck[i].BP2)) % 24;//Time truck enters the RestArea[a], round down
-        s2 = int(ceil(Truck[i].BP2 + Truck[i].RestLong)) %24;//Time truck leaves the RestArea[a]
+        s1 = int(floor(Truck[i].BP2)) % 24;//Time truck enters the RestArea[b], round down
+        s2 = int(ceil(Truck[i].BP2 + Truck[i].RestLong)) %24;//Time truck leaves the RestArea[b]
 
         while((s1 < s2) || (s1 == s2) ) {
             RestArea[b].Lnum[s1] = RestArea[b].Lnum[s1] + 1;
@@ -185,14 +195,14 @@ int main() {
         Truck[i].BufferTime = 0;
 
         //Truck.stu[i] = DE;
-        // print results
+        // print results test
         cout<<"Truck "<<i<<endl;
         cout<< Truck[i].StartT<<endl;
         cout<< Truck[i].BP1<<endl;
         cout<< Truck[i].RestShort<<endl;
-        cout<<a<<endl;
+        cout<< Truck[i].RS<<endl;
         cout<< Truck[i].BP2<<endl;
-        cout<<b<<endl;
+        cout<< Truck[i].RL<<endl;
         cout<< Truck[i].RestLong<<endl;
 
     }
@@ -200,21 +210,25 @@ int main() {
     outFile.open("Truck.txt");
 
     outFile << std::setprecision(2) << std::fixed; // keep two decimals
+
     //print title
-    outFile <<"Truck Num   StartT   BP1   ShortRest   FirstParking    BP2       SecondParking   LOngRest    \n";
+    outFile <<"Truck Num"<<std::right<<setw(10)<<"StartT"<<std::right<<setw(8)\
+            <<"BP1"<<std::right<<setw(13)<<"ShortRest"<<std::right<<setw(15)<<"FirstParking"<<std::right<<setw(8)\
+            <<"BP2"<<std::right<<setw(18)<<"SecondParking"<<std::right<<setw(10)<<"LongRest"<<std::right<<setw(8)<<"\n";
     //print truck data
     for( i = 0; i < n; i++)
     {
 
-    outFile <<"Truck "<<i<<"    "<< Truck[i].StartT <<"     "<<Truck[i].BP1<<"  "<< Truck[i].RestShort<<"           "<<a<<"            "<<Truck[i].BP2<<"      "<<b<<"              "<<Truck[i].RestLong<<endl;
-
+        outFile <<"Truck "<<std::right<<setw(2)<<i<<std::right<<setw(10)<< Truck[i].StartT <<std::right<<setw(10)\
+                <<Truck[i].BP1<<std::right<<setw(10)<< Truck[i].RestShort<<std::right<<setw(10)<<Truck[i].RS<<std::right<<setw(15)\
+                <<Truck[i].BP2<<std::right<<setw(12)<<Truck[i].RL<<std::right<<setw(15)<<Truck[i].RestLong<<endl;
     }
     outFile.close();
 
     outFile.open("RestArea.txt");
 
-    outFile << " Number of trucks in short rest " <<endl;
-    outFile << " RestArea    Time    Number of turcks"<<endl;
+    outFile << " Number of trucks in short rest \n" <<endl;
+    outFile << "RestArea"<<std::right<<setw(10)<<"Time"<<std::right<<setw(10)<<"Number of turcks"<<std::right<<setw(10)<<endl;
 
     for( j = 0; j <m ; j++)
     {
@@ -222,12 +236,12 @@ int main() {
 
         for ( t = 0; t<25; t++)
         {
-
-            outFile << "     "<<t << "       " << RestArea[j].Snum[t] << endl;
+            outFile <<std::right<<setw(20)<<t <<std::right<<setw(10)<< RestArea[j].Snum[t] << endl;
             //cout << t << " Number of trucks in long rest in rest area " << j << " is " << RestArea[j].Lnum[t] << endl;
         }
     }
 
+    outFile.close();
     return 0;
 }
 
