@@ -101,7 +101,7 @@ int main() {
     int i =0;                               // Iterate for Truck combined with n
     int j =0;                               // Iterate for RestArea combined with m
     int L = 1000;                           //Total simulation distance unit in mile
-    int n = 10;                             //number of trucks to simulate
+    int n = 10000;                             //number of trucks to simulate
     int m = 20;                             // number of rest area
 
     int a = 0;                          // store the RestArea number of SHORT rest
