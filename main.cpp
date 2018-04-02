@@ -193,7 +193,6 @@ int main() {
         }
 
         Truck[i].BufferTime = 0;
-
         //Truck.stu[i] = DE;
         // print results test
         cout<<"Truck "<<i<<endl;
@@ -206,27 +205,26 @@ int main() {
         cout<< Truck[i].RestLong<<endl;
 
     }
-// output to a txt file
+
+
+    // output to txt file
+    // output truck file
     outFile.open("Truck.txt");
-
     outFile << std::setprecision(2) << std::fixed; // keep two decimals
-
     //print title
     outFile <<"Truck Num"<<std::right<<setw(10)<<"StartT"<<std::right<<setw(8)\
             <<"BP1"<<std::right<<setw(13)<<"ShortRest"<<std::right<<setw(15)<<"FirstParking"<<std::right<<setw(8)\
             <<"BP2"<<std::right<<setw(18)<<"SecondParking"<<std::right<<setw(10)<<"LongRest"<<std::right<<setw(8)<<"\n";
-    //print truck data
     for( i = 0; i < n; i++)
     {
-
         outFile <<"Truck "<<std::right<<setw(2)<<i<<std::right<<setw(10)<< Truck[i].StartT <<std::right<<setw(10)\
                 <<Truck[i].BP1<<std::right<<setw(10)<< Truck[i].RestShort<<std::right<<setw(10)<<Truck[i].RS<<std::right<<setw(15)\
                 <<Truck[i].BP2<<std::right<<setw(12)<<Truck[i].RL<<std::right<<setw(15)<<Truck[i].RestLong<<endl;
     }
     outFile.close();
 
+    //output RestArea
     outFile.open("RestArea.txt");
-
     outFile << " Number of trucks in short rest \n" <<endl;
     outFile << "RestArea"<<std::right<<setw(10)<<"Time"<<std::right<<setw(10)<<"Number of turcks"<<std::right<<setw(10)<<endl;
 
