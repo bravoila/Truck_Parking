@@ -155,6 +155,9 @@ int main() {
 
         //consider preference here or another function in the header file
 
+
+
+
         //the driver can park at the place he prefer in [0,a], choose the preferred RestArea
         //if the variance of the preference is below threshold, then choose the farest RestArea (a)
         //update BP1 value
