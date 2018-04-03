@@ -14,7 +14,6 @@ enum STATUS { DE, DR, SR, PR }; // DE is the default
 
 struct TruckPropStru
 {
-
     double speed;           //Driving speed
     double DRbefore;        //Driving time before entering the highway
     double StartT;          //Time entering the highway
@@ -28,7 +27,6 @@ struct TruckPropStru
     STATUS stu;
 
 //start here tomorrow #############//double arrival;     //arrival time
-// entrance/exit, enter from reset area
 };
 
 struct RestAreaStru
@@ -54,7 +52,6 @@ struct EnterExitStru
     double dist;  //enterance/exit distance to point 0
     int n1;       //number of trucks entering or exiting
 };
-
 
 int PreferS(int farest)        // preference,return the preferred parking number, can summerize from data
 // consider service and legal driving hour left by far
@@ -211,7 +208,7 @@ int main() {
         RestArea[j] = {j,0,{},{},(j)*L/m};
         /* in the future it can be set*/
     }
-    // entrance
+    // entrance{distance to point 0,number of trucks entering}
     struct EnterExitStru Enter[et] = {
             {200,1000},
             {400,2000},
@@ -220,12 +217,13 @@ int main() {
             {900,100},
     };
 
+    // get total number of trucks
     for ( l = 0; l< et; l ++)
     {
         tn = tn + Enter[l].n1; //total number of trucks simulated ( including enter);
     }
 
-
+    // print total number of trucks, for check purpose
     cout<<tn<<endl;
 
 
@@ -304,7 +302,9 @@ int main() {
     }
 
     // trucks leaving the highway
-    //tomorrow
+    // re-entr after long rest
+    // circle simulation
+    // tomorrow
 
 
 
