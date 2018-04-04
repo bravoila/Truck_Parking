@@ -86,7 +86,8 @@ int PreferL(int local, int farest)        // preference,return the preferred par
 
 // for future modification RestArea[m]!!!
 // The function works for 24 hour
-void Truck2Rest(TruckPropStru* Truck, double legal, double Spacing, double eti, RestAreaStru RestArea[20])
+
+void Truck2Rest(struct TruckPropStru *Truck, double legal, double Spacing, double eti, struct RestAreaStru RestArea[],vector<double> &REE)
 {
 
     uniform_real_distribution<double> u(0, 1);          // 定义一个范围为0~1的浮点数分布类型
@@ -114,7 +115,7 @@ void Truck2Rest(TruckPropStru* Truck, double legal, double Spacing, double eti, 
     // allocate the rest area to decide the tru BP1
     // truck cannot park randomly, a is actually the last RestArea number
     // the driver can park in order to obey HOS
-    a =  int(floor( (legal * Truck->speed + eti)/ Spacing)) ; //farest rest area the trucker can reach legally
+    a =  int(floor( ( Truck->speed * legal + eti)/ Spacing)) ; //farest rest area the trucker can reach legally
 
     //consider preference here or another function in the header file
     //the driver can park at the place he prefer in [0,a], choose the preferred RestArea
@@ -152,6 +153,15 @@ void Truck2Rest(TruckPropStru* Truck, double legal, double Spacing, double eti, 
         RestArea[b].Lnum[s1] = RestArea[b].Lnum[s1] + 1;
         s1 ++;
     }
+
+    //save leaving time (re-enter after long rest)
+    REE.push_back(s2);
+
+
+
+
+
+
 }
 
 /*################################  Main Function   ##################################*/
@@ -176,10 +186,10 @@ int main() {
     int i =0;                               // Iterate for Truck combined with n
     int j =0;                               // Iterate for RestArea combined with m
     int l =0;                               // Random Iterator
-    int L = 1000;                           //Total simulation distance unit in mile
+    int L = 2000;                           //Total simulation distance unit in mile
     int n = 10000;                          //number of trucks to simulate entering from point 0
     int tn = n;                             // total number of trucks to simulate
-
+    struct TruckPropStru *ptr;
 
 
     int m = 20;                             // number of rest area
@@ -191,11 +201,13 @@ int main() {
     int t = 0;                              // time point for print out
     double legal = 0;                       // record legal driving time
     vector<double> LDH = {};               //Legal driving time
+    vector<double> REE = {};              //save leaving time (re-enter point for each truck after long rest)
     /*initialization*/
     /* Creat rest area*/
 
     double Spacing = double(L/m);            // Rest area spacing interval
     int TimeInv = 1;                        // Time interval
+    int temp1 = 0;
 
     // USDOT HOS Regulation
     RegulationStru Reg = {8,11};
@@ -210,12 +222,22 @@ int main() {
     }
     // entrance{distance to point 0,number of trucks entering}
     struct EnterExitStru Enter[et] = {
-            {200,1000},
-            {400,2000},
-            {600,600},
-            {700,100},
-            {900,100},
+            {200.0,10000},
+            {400.0,10},
+            {600.0,10},
+            {700.0,10},
+            {900.0,10000},
     };
+
+    for ( l = 0; l< et; l ++)
+    {
+        cout<<Enter[l].n1<<endl; //total number of trucks simulated ( including enter);
+    }
+
+
+
+
+
 
     // get total number of trucks
     for ( l = 0; l< et; l ++)
@@ -223,9 +245,8 @@ int main() {
         tn = tn + Enter[l].n1; //total number of trucks simulated ( including enter);
     }
 
-    // print total number of trucks, for check purpose
-    cout<<tn<<endl;
 
+    // print total number of trucks, for check purpose
 
     TruckPropStru Truck[tn] = {{0,0,0,0,0,0,0,0,0,0,DE}};
 
@@ -235,7 +256,7 @@ int main() {
         //Truck[i].WorkTime = k*u(e);
         Truck[i].speed = 70;  //assume speed is 70 mph
 
-        /*################################  Set distributions   ##################################*/
+        //################################  Set distributions   ##################################
         Truck[i].DRbefore = 3*u(e) ;// Driving time before entering the highway
         Truck[i].StartT = abs(lgn1(e)); //Arrival function at entrance
                                         //in the future u(e) can be replaced by traffic flow function
@@ -244,22 +265,7 @@ int main() {
         // short and long rest time
         Truck[i].RestShort = lgn2(e);// rest time distribution truck leaves the RestArea[a], round up
         Truck[i].RestLong = 4 + 12*u(e)+0.5;
-
-        Truck2Rest(&Truck[i], legal, Spacing, eti, RestArea);
-
-/*
-        Truck[i].BufferTime = 0;
-        //Truck.stu[i] = DE;
-        // print results test
-        cout<<"Truck "<<i<<endl;
-        cout<< Truck[i].StartT<<endl;
-        cout<< Truck[i].BP1<<endl;
-        cout<< Truck[i].RestShort<<endl;
-        cout<< Truck[i].RS<<endl;
-        cout<< Truck[i].BP2<<endl;
-        cout<< Truck[i].RL<<endl;
-        cout<< Truck[i].RestLong<<endl;
-*/
+        Truck2Rest(&(Truck[i]), legal, Spacing, eti, RestArea,REE);
     }
 
     // trucks start from the rest area after long rest(re-enter from rest area)
@@ -277,16 +283,19 @@ int main() {
 
 */
 
-    // trucks enter the highway
+    // trucks enter the highway does not work---- when l =1000, the following does not work
+    // consider dorp trucks or circular tomorrow
+
+        i = n;
     for ( l = 0; l < et; l ++)
     {
-
-        for ( i = n; i < Enter[l].n1; i++)
+        eti = Enter[l].dist;
+        temp1 = i + Enter[l].n1;
+        for ( i = n; i < temp1; i++)
         {
             //Truck[i].WorkTime = k*u(e);
             Truck[i].speed = 70;  //assume speed is 70 mph
-
-            /*################################  Set distributions   ##################################*/
+            //################################  Set distributions   ##################################//
             Truck[i].DRbefore = 3*u(e) ;// Driving time before entering the highway
             Truck[i].StartT = abs(lgn1(e)); //Arrival function, in the future u(e) can be replaced by traffic flow function
 
@@ -295,17 +304,30 @@ int main() {
 
             // short and long rest time
             Truck[i].RestShort = lgn2(e);// rest time distribution truck leaves the RestArea[a], round up
-            Truck[i].RestLong = 4 + 12*u(e)+0.5;
+            Truck[i].RestLong = 12*u(e)+0.5;
 
-            Truck2Rest(&Truck[i], legal, Spacing, Enter[l].dist, RestArea);
+            Truck2Rest(&(Truck[i]), legal, Spacing, eti, RestArea, REE);
+            cout<<i<<endl;
         }
+        n = i;
+        cout<<n<<endl;
+
     }
+
+
+
 
     // trucks leaving the highway
     // re-entr after long rest
     // circle simulation
     // tomorrow
 
+
+    //test// under construction
+    //for (auto ii = REE.begin(); ii != REE.end(); ++ii)
+    //{
+    //    cout << *ii << ' '<<endl;
+    //}
 
 
 
