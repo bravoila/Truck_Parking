@@ -87,7 +87,13 @@ int PreferL(int local, int farest)        // preference,return the preferred par
 // for future modification RestArea[m]!!!
 // The function works for 24 hour
 
-void Truck2Rest(struct TruckPropStru *Truck, double legal, double Spacing, double eti, struct RestAreaStru RestArea[],vector<double> &REE)
+// To do:
+// add capacity consideration, vialation,etc
+// add exit
+// add perference of rest area
+// simulate circular of segment of highway?
+
+void Truck2Rest(struct TruckPropStru *Truck, double legal, double Spacing, double eti, struct RestAreaStru RestArea[],vector<double> &REE,int m)
 {
 
     uniform_real_distribution<double> u(0, 1);          // 定义一个范围为0~1的浮点数分布类型
@@ -117,6 +123,10 @@ void Truck2Rest(struct TruckPropStru *Truck, double legal, double Spacing, doubl
     // the driver can park in order to obey HOS
     a =  int(floor( ( Truck->speed * legal + eti)/ Spacing)) ; //farest rest area the trucker can reach legally
 
+    if(a > m)
+    {
+        return;// if the truck is beyond the observed segment, then quit the function
+    }
     //consider preference here or another function in the header file
     //the driver can park at the place he prefer in [0,a], choose the preferred RestArea
     //if the variance of the preference is below threshold, then choose the farest RestArea (a)
@@ -142,6 +152,13 @@ void Truck2Rest(struct TruckPropStru *Truck, double legal, double Spacing, doubl
 
     b = a + int(floor((Truck->BP2 - Truck->BP1 - Truck->RestShort ) * Truck->speed / Spacing));
     //farest rest area trucker can reach
+
+
+    if(b > m)
+    {
+        return ;// if the truck is beyond the observed segment, then quit the function
+    }
+
     Truck->RL = PreferL(a,b);
     Truck->BP2 = Truck->BP1 + Truck->RestShort + RestArea[b].location/ Truck->speed;
     //Truck->RestLong = 4 + 12*u(e)+0.5;
@@ -186,7 +203,7 @@ int main() {
     int i =0;                               // Iterate for Truck combined with n
     int j =0;                               // Iterate for RestArea combined with m
     int l =0;                               // Random Iterator
-    int L = 2000;                           //Total simulation distance unit in mile
+    int L = 1000;                           //Total simulation distance unit in mile
     int n = 10000;                          //number of trucks to simulate entering from point 0
     int tn = n;                             // total number of trucks to simulate
     struct TruckPropStru *ptr;
@@ -265,7 +282,7 @@ int main() {
         // short and long rest time
         Truck[i].RestShort = lgn2(e);// rest time distribution truck leaves the RestArea[a], round up
         Truck[i].RestLong = 4 + 12*u(e)+0.5;
-        Truck2Rest(&(Truck[i]), legal, Spacing, eti, RestArea,REE);
+        Truck2Rest(&(Truck[i]), legal, Spacing, eti, RestArea,REE,m);
     }
 
     // trucks start from the rest area after long rest(re-enter from rest area)
@@ -306,7 +323,7 @@ int main() {
             Truck[i].RestShort = lgn2(e);// rest time distribution truck leaves the RestArea[a], round up
             Truck[i].RestLong = 12*u(e)+0.5;
 
-            Truck2Rest(&(Truck[i]), legal, Spacing, eti, RestArea, REE);
+            Truck2Rest(&(Truck[i]), legal, Spacing, eti, RestArea, REE,m);
             cout<<i<<endl;
         }
         n = i;
