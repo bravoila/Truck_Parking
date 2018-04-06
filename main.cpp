@@ -123,7 +123,7 @@ void Truck2Rest(struct TruckPropStru *Truck, double legal, double Spacing, doubl
     if(a > m || (a* Spacing < eti || a* Spacing == eti))
     {
         cout<<"q"<<endl;
-        return;// if the truck is beyond the observed segment, then quit the function
+        return;// if the truck is beyond the observed segment or before the entry point, then quit the function
     }
     //consider preference here or another function in the header file
     //the driver can park at the place he prefer in [0,a], choose the preferred RestArea
