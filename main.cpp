@@ -151,7 +151,6 @@ void Truck2Rest(struct TruckPropStru *Truck, double legal, double Spacing, doubl
     b = a + int(floor((Truck->BP2 - Truck->BP1 - Truck->RestShort ) * Truck->speed / Spacing));
     //farest rest area trucker can reach
 
-
     if(b > m || b* Spacing < eti|| b* Spacing == eti)
     {
         cout<<"qq"<<endl;
@@ -238,8 +237,6 @@ int main() {
             {600.0,2000},
             {700.0,5000},
             {900.0,20000}};
-
-
 
     // get total number of trucks
     for ( l = 0; l< et; l ++)
@@ -334,8 +331,6 @@ int main() {
     //{
     //    cout << *ii << ' '<<endl;
     //}
-
-
 
 
 
