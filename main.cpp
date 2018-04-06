@@ -240,6 +240,7 @@ int main() {
             {900.0,20000}};
 
 
+
     // get total number of trucks
     for ( l = 0; l< et; l ++)
     {
