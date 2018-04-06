@@ -25,32 +25,29 @@ struct TruckPropStru
     double RestLong;        //Duration of long break
     double BufferTime;      //Buffer time
     STATUS stu;
-
-//start here tomorrow #############//double arrival;     //arrival time
 };
 
 struct RestAreaStru
 {
     int id;             // Rest area's ID , stands for the distance from the observation point
-    int Anum;           //number of trucks already park here
     int Snum[24];       //number of trucks taking SHORT rest
                         //eg. Snum[3] store the number of trucks parked at RestArea from [3,4)
                         // if truck parks from 1.5 to 3.5, then Sunm[1],[2],[3] all plus 1.
     int Lnum[24];       //number of trucks taking LONG rest
-    int location;       //rest area location
+    double location;       //rest area location
 };
 
 struct RegulationStru
 {
-    int MaxWS;   //Maximum working hours until interruption by short break regulation
-    int MaxWL;    //Maximum working hours until interruption by long break regulation
+    double MaxWS;   //Maximum working hours until interruption by short break regulation
+    double MaxWL;    //Maximum working hours until interruption by long break regulation
 
 };
 
 struct EnterExitStru
 {
     double dist;  //enterance/exit distance to point 0
-    int n1;       //number of trucks entering or exiting
+    int num;       //number of trucks entering or exiting
 };
 
 int PreferS(int farest)        // preference,return the preferred parking number, can summerize from data
@@ -114,17 +111,18 @@ void Truck2Rest(struct TruckPropStru *Truck, double legal, double Spacing, doubl
     int b = 0;                       // store the RestArea number of LONG rest
     int s1 = 0;                      // store the entering time of SHORT and LONG rest
     int s2 = 0;                      // store the leaving time number of SHORT LONG rest, in 1 hour interval
-    RegulationStru Reg = {8,11};     // USDOT HOS Regulation
+    RegulationStru Reg = {8.0,11.0};     // USDOT HOS Regulation
 
     Truck->BP1 = Truck->StartT +  legal;
 
     // allocate the rest area to decide the tru BP1
     // truck cannot park randomly, a is actually the last RestArea number
     // the driver can park in order to obey HOS
-    a =  int(floor( ( Truck->speed * legal + eti)/ Spacing)) ; //farest rest area the trucker can reach legally
+    a =  int(floor((Truck->speed * legal + eti)/ Spacing)) ; //farest rest area the trucker can reach legally
 
-    if(a > m)
+    if(a > m || (a* Spacing < eti || a* Spacing == eti))
     {
+        cout<<"q"<<endl;
         return;// if the truck is beyond the observed segment, then quit the function
     }
     //consider preference here or another function in the header file
@@ -136,7 +134,7 @@ void Truck2Rest(struct TruckPropStru *Truck, double legal, double Spacing, doubl
     Truck->RS = PreferS(a);     //rest area for short rest
 
     s1 = int(floor(Truck->BP1)) % 24;//Time truck enters the RestArea[a], round down
-    s2 = int(ceil(Truck->BP1 + Truck->RestShort)) %24;//Time the truck leave the rest area, round up
+    s2 = int(ceil(Truck->BP1 + Truck->RestShort)) % 24;//Time the truck leave the rest area, round up
     Truck->BP1 = Truck->StartT + RestArea[a].location / Truck->speed;
     // short rest time
     //Truck->RestShort = lgn2(e);// rest time distribution truck leaves the RestArea[a], round up
@@ -154,13 +152,14 @@ void Truck2Rest(struct TruckPropStru *Truck, double legal, double Spacing, doubl
     //farest rest area trucker can reach
 
 
-    if(b > m)
+    if(b > m || b* Spacing < eti|| b* Spacing == eti)
     {
+        cout<<"qq"<<endl;
         return ;// if the truck is beyond the observed segment, then quit the function
     }
 
     Truck->RL = PreferL(a,b);
-    Truck->BP2 = Truck->BP1 + Truck->RestShort + RestArea[b].location/ Truck->speed;
+    Truck->BP2 = Truck->BP1 + Truck->RestShort + (RestArea[b].location/ Truck->speed);
     //Truck->RestLong = 4 + 12*u(e)+0.5;
 
     s1 = int(floor(Truck->BP2)) % 24;//Time truck enters the RestArea[b], round down
@@ -173,10 +172,6 @@ void Truck2Rest(struct TruckPropStru *Truck, double legal, double Spacing, doubl
 
     //save leaving time (re-enter after long rest)
     REE.push_back(s2);
-
-
-
-
 
 
 }
@@ -203,11 +198,10 @@ int main() {
     int i =0;                               // Iterate for Truck combined with n
     int j =0;                               // Iterate for RestArea combined with m
     int l =0;                               // Random Iterator
-    int L = 1000;                           //Total simulation distance unit in mile
-    int n = 10000;                          //number of trucks to simulate entering from point 0
+    double L = 1000.0;                           //Total simulation distance unit in mile
+    int n = 50000;                          //number of trucks to simulate entering from point 0
+                                            // WARNING: the code cannot run the simulation above 100,000.(total number)
     int tn = n;                             // total number of trucks to simulate
-    struct TruckPropStru *ptr;
-
 
     int m = 20;                             // number of rest area
     int et = 5;                             // number of entrance
@@ -222,50 +216,38 @@ int main() {
     /*initialization*/
     /* Creat rest area*/
 
-    double Spacing = double(L/m);            // Rest area spacing interval
+    double Spacing = L/m;            // Rest area spacing interval
     int TimeInv = 1;                        // Time interval
     int temp1 = 0;
 
     // USDOT HOS Regulation
-    RegulationStru Reg = {8,11};
+    RegulationStru Reg = {8.0,11.0};
     // rest area
-    RestAreaStru RestArea[m] ={{0}};
+    RestAreaStru RestArea[m] ={{0,{0},{0},0.0}};
 
     for ( j = 0; j < m ; j++)
     {
         /*Truck.stu.push_back(DR);*/
-        RestArea[j] = {j,0,{},{},(j)*L/m};
+        RestArea[j] = {j,{},{},double(j)*L/m};
         /* in the future it can be set*/
     }
     // entrance{distance to point 0,number of trucks entering}
     struct EnterExitStru Enter[et] = {
-            {200.0,10000},
-            {400.0,10},
-            {600.0,10},
-            {700.0,10},
-            {900.0,10000},
-    };
-
-    for ( l = 0; l< et; l ++)
-    {
-        cout<<Enter[l].n1<<endl; //total number of trucks simulated ( including enter);
-    }
-
-
-
-
+            {200.0,2000},//double dist, int n1
+            {400.0,5000},
+            {600.0,2000},
+            {700.0,5000},
+            {900.0,20000}};
 
 
     // get total number of trucks
     for ( l = 0; l< et; l ++)
     {
-        tn = tn + Enter[l].n1; //total number of trucks simulated ( including enter);
+        cout<<Enter[l].num<<endl; //total number of trucks simulated ( including enter);
+        tn = tn + Enter[l].num; //total number of trucks simulated ( including enter);
     }
 
-
-    // print total number of trucks, for check purpose
-
-    TruckPropStru Truck[tn] = {{0,0,0,0,0,0,0,0,0,0,DE}};
+    TruckPropStru Truck[tn] = {{0.0,0.0,0.0,0.0,0,0.0,0.0,0,0.0,0.0,DE}};
 
     // trucks start from the entering point of highway
     for ( i = 0 ; i < n; i++)
@@ -303,12 +285,18 @@ int main() {
     // trucks enter the highway does not work---- when l =1000, the following does not work
     // consider dorp trucks or circular tomorrow
 
-        i = n;
     for ( l = 0; l < et; l ++)
     {
         eti = Enter[l].dist;
-        temp1 = i + Enter[l].n1;
-        for ( i = n; i < temp1; i++)
+        temp1 = i + Enter[l].num;
+
+        cout<<"eti"<<eti<<endl;
+        cout<<l<<endl;
+        cout<<Enter[l].num<<endl;
+        cout<<n + Enter[l].num<<endl;
+        cout<<"================="<<endl;
+
+        for ( i = n; i < n + Enter[l].num; i++)
         {
             //Truck[i].WorkTime = k*u(e);
             Truck[i].speed = 70;  //assume speed is 70 mph
@@ -326,11 +314,11 @@ int main() {
             Truck2Rest(&(Truck[i]), legal, Spacing, eti, RestArea, REE,m);
             cout<<i<<endl;
         }
-        n = i;
-        cout<<n<<endl;
+
+        n = n + Enter[l].num ;
+        cout<<"n = "<<n<<endl;
 
     }
-
 
 
 
