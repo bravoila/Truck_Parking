@@ -1,0 +1,38 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/bravoila/CLionProjects/testforinput/main.cpp
+iostream
+-
+string
+-
+fstream
+-
+cstdlib
+-
+iostream
+-
+vector
+-
+stdlib.h
+-
+ctime
+-
+random
+-
+cmath
+-
+fstream
+-
+string
+-
+iomanip
+-
+algorithm
+-
+

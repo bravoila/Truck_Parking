@@ -1,0 +1,3 @@
+/home/bravoila/CLionProjects/testforinput/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+/home/bravoila/CLionProjects/testforinput/cmake-build-debug/CMakeFiles/edit_cache.dir
+/home/bravoila/CLionProjects/testforinput/cmake-build-debug/CMakeFiles/testforinput.dir
