@@ -11,7 +11,7 @@ iostream
 -
 vector
 -
-stdlib.h
+cstdlib
 -
 ctime
 -
@@ -24,5 +24,7 @@ fstream
 string
 -
 iomanip
+-
+algorithm
 -
 

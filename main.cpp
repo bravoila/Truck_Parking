@@ -1,12 +1,13 @@
 #include <iostream>
 #include <vector>
-#include <stdlib.h>
+#include <cstdlib>
 #include <ctime>
 #include <random>
 #include <cmath>
 #include <fstream>
 #include <string>
 #include <iomanip>
+#include <algorithm>
 using namespace std;
 
 enum STATUS { DE, DR, SR, PR }; // DE is the default
@@ -30,11 +31,12 @@ struct TruckPropStru
 struct RestAreaStru
 {
     int id;             // Rest area's ID , stands for the distance from the observation point
+    double location;       //rest area location
     int Snum[24];       //number of trucks taking SHORT rest
                         //eg. Snum[3] store the number of trucks parked at RestArea from [3,4)
                         // if truck parks from 1.5 to 3.5, then Sunm[1],[2],[3] all plus 1.
     int Lnum[24];       //number of trucks taking LONG rest
-    double location;       //rest area location
+
 };
 
 struct RegulationStru
@@ -90,7 +92,7 @@ int PreferL(int local, int farest)        // preference,return the preferred par
 // add perference of rest area
 // simulate circular of segment of highway?
 
-void Truck2Rest(struct TruckPropStru *Truck, double legal, double Spacing, double eti, struct RestAreaStru RestArea[],vector<double> &REE,int m)
+void Truck2Rest(struct TruckPropStru *Truck, double legal, double eti, struct RestAreaStru RestArea[],vector<double> &REE,int m)
 {
 
     uniform_real_distribution<double> u(0, 1);          // 定义一个范围为0~1的浮点数分布类型
@@ -107,6 +109,7 @@ void Truck2Rest(struct TruckPropStru *Truck, double legal, double Spacing, doubl
     std::normal_distribution<double> nor2(2,0.7);   //Normal distribution, use for driving time
     //https://homepage.divms.uiowa.edu/~mbognar/applets/normal.html
 
+    int it = m - 1;                         //iterater
     int a = 0;                       // store the RestArea number of SHORT rest
     int b = 0;                       // store the RestArea number of LONG rest
     int s1 = 0;                      // store the entering time of SHORT and LONG rest
@@ -118,12 +121,23 @@ void Truck2Rest(struct TruckPropStru *Truck, double legal, double Spacing, doubl
     // allocate the rest area to decide the tru BP1
     // truck cannot park randomly, a is actually the last RestArea number
     // the driver can park in order to obey HOS
-    a =  int(floor((Truck->speed * legal + eti)/ Spacing)) ; //farest rest area the trucker can reach legally
 
-    if(a > m || (a* Spacing < eti || a* Spacing == eti))
+
+    while(int(floor((Truck->speed * legal + eti)/ RestArea[it].location)) == 0)
+    {
+        it--;
+    }
+
+    a = it;
+    cout<<a<<endl;
+    // when
+    if(a == m-1 || a == -1||RestArea[a].location < eti||RestArea[a].location == eti)
     {
         cout<<"q"<<endl;
-        return;// if the truck is beyond the observed segment or before the entry point, then quit the function
+        return;
+        // if the truck is beyond the observed segment (a = m-1)
+        // or before the entry point(RestArea[a].location < eti||RestArea[a].location == eti),
+        // or the truck cannot even reach the nearset rest area( a= -1), then quit the function
     }
     //consider preference here or another function in the header file
     //the driver can park at the place he prefer in [0,a], choose the preferred RestArea
@@ -148,13 +162,23 @@ void Truck2Rest(struct TruckPropStru *Truck, double legal, double Spacing, doubl
     // the latter is the same as driving time function in the first part
     // truck driver driving time can be less than the regulation
 
-    b = a + int(floor((Truck->BP2 - Truck->BP1 - Truck->RestShort ) * Truck->speed / Spacing));
-    //farest rest area trucker can reach
 
-    if(b > m || b* Spacing < eti|| b* Spacing == eti)
+    it = m - 1; //reset it value
+
+    while(int(floor((RestArea[a].location + (Truck->BP2 - Truck->BP1 - Truck->RestShort)* Truck->speed)/ RestArea[it].location)) == 0)
+    {
+        it--;
+    }
+
+    b = it;
+    cout<<b<<endl;
+    // when
+    if(b == m-1 || b == a)
     {
         cout<<"qq"<<endl;
-        return ;// if the truck is beyond the observed segment, then quit the function
+        return;
+        // if the truck is beyond the observed segment (b = m-1)
+        // or the truck cannot even reach the nearset rest area( b == a), then quit the function
     }
 
     Truck->RL = PreferL(a,b);
@@ -197,7 +221,7 @@ int main() {
     int i =0;                               // Iterate for Truck combined with n
     int j =0;                               // Iterate for RestArea combined with m
     int l =0;                               // Random Iterator
-    double L = 1000.0;                           //Total simulation distance unit in mile
+    double L = 1000.0;                      //Total simulation distance unit in mile
     int n = 50000;                          //number of trucks to simulate entering from point 0
                                             // WARNING: the code cannot run the simulation above 100,000.(total number)
     int tn = n;                             // total number of trucks to simulate
@@ -219,24 +243,72 @@ int main() {
     int TimeInv = 1;                        // Time interval
     int temp1 = 0;
 
+
     // USDOT HOS Regulation
     RegulationStru Reg = {8.0,11.0};
     // rest area
-    RestAreaStru RestArea[m] ={{0,{0},{0},0.0}};
 
+
+    /*
+    RestAreaStru RestArea[m] ={{0,0.0,{0},{0}}};
     for ( j = 0; j < m ; j++)
     {
-        /*Truck.stu.push_back(DR);*/
-        RestArea[j] = {j,{},{},double(j)*L/m};
-        /* in the future it can be set*/
+        //Truck.stu.push_back(DR);
+        RestArea[j] = {j,double(j)*L/m,{},{}};
+        // in the future it can be set
     }
+    */
+    RestAreaStru RestArea[m];
+
+    ifstream infile("RestA_info.txt", ios::in);
+    if(!infile)
+    {
+        cout << "Error: opening file fail" << endl;
+        exit(1);
+    }
+    while(!infile.eof() && j < m)
+    {
+        infile >> RestArea[j].id >> RestArea[j].location;
+        for( i = 0 ; i< 24 ; i++)
+        {
+            infile >> RestArea[j].Snum[i] ;
+        }
+        for( i = 0 ; i< 24 ; i++)
+        {
+            infile >>  RestArea[j].Lnum[i];
+        }
+        j++;
+
+    }
+/*
+    for( int j = 0; j < m ; j++)
+    {
+        cout <<"Rest Area " << j<<"\n"<< endl;
+
+        cout<<RestArea[j].id<<"\t"<<RestArea[j].location<<endl;
+
+        for ( int t = 0; t<24; t++)
+        {
+            cout << RestArea[j].Snum[t] <<"\t";
+        }
+        for ( int tt = 0; tt<24; tt++)
+        {
+            cout << RestArea[j].Lnum[tt] <<"\t";
+        }
+
+        cout<<"\n"<<endl;
+    }
+    */
+    infile.close();
+
+
     // entrance{distance to point 0,number of trucks entering}
     struct EnterExitStru Enter[et] = {
-            {200.0,2000},//double dist, int n1
-            {400.0,5000},
-            {600.0,2000},
-            {700.0,5000},
-            {900.0,20000}};
+            {200.0,200},//double dist, int n1
+            {400.0,500},
+            {600.0,200},
+            {700.0,500},
+            {900.0,200}};
 
     // get total number of trucks
     for ( l = 0; l< et; l ++)
@@ -262,7 +334,7 @@ int main() {
         // short and long rest time
         Truck[i].RestShort = lgn2(e);// rest time distribution truck leaves the RestArea[a], round up
         Truck[i].RestLong = 4 + 12*u(e)+0.5;
-        Truck2Rest(&(Truck[i]), legal, Spacing, eti, RestArea,REE,m);
+        Truck2Rest(&(Truck[i]), legal, eti, RestArea,REE,m);
     }
 
     // trucks start from the rest area after long rest(re-enter from rest area)
@@ -309,7 +381,7 @@ int main() {
             Truck[i].RestShort = lgn2(e);// rest time distribution truck leaves the RestArea[a], round up
             Truck[i].RestLong = 12*u(e)+0.5;
 
-            Truck2Rest(&(Truck[i]), legal, Spacing, eti, RestArea, REE,m);
+            Truck2Rest(&(Truck[i]), legal, eti, RestArea, REE,m);
             cout<<i<<endl;
         }
 
@@ -359,7 +431,7 @@ int main() {
     {
         outFile <<"Rest Area " << j<<"\n"<< endl;
 
-        for ( t = 0; t<25; t++)
+        for ( t = 0; t<24; t++)
         {
             outFile <<std::right<<setw(20)<<t <<std::right<<setw(10)<< RestArea[j].Snum[t] << endl;
             //cout << t << " Number of trucks in long rest in rest area " << j << " is " << RestArea[j].Lnum[t] << endl;
