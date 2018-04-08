@@ -46,11 +46,13 @@ struct RegulationStru
     double MaxWL;    //Maximum working hours until interruption by long break regulation
 
 };
+//partical OD
 
 struct EnterExitStru
 {
-    double dist;  //enterance/exit distance to point 0
-    int num;       //number of trucks entering or exiting
+    double Etd;     //enterance distance to point 0
+    double Exd;     //exit distance to point 0
+    int num;        //number of trucks entering or exiting
 };
 
 int PreferS(int farest)        // preference,return the preferred parking number, can summerize from data
@@ -228,8 +230,8 @@ int main() {
     int tn = n;                             // total number of trucks to simulate
 
     int m = 20;                             // number of rest area
-    int et = 5;                             // number of entrance
-    int ex = 5;                             // number of exit
+    int et = 21;                             // total number of combination of entrance and exit
+                        // (assume 5 entr , 5 exit, plus initial entry and final exit) C7_2 = 7x6/(2x1)=21
     double eti = 0;                          // initial entry point ( distant to the 0 point)
     double etx = L;                         // exit point ( distant to the 0 point)
 
@@ -306,27 +308,22 @@ int main() {
 
 
     // entrance{distance to point 0,number of trucks entering}
-    struct EnterExitStru Enter[et] = {
-            {100.0,1000},//double dist, int n1
-            {200.0,2000},
-            {300.0,3000},
-            {400.0,4000},
-            {500.0,5000}};
-
-    struct EnterExitStru ExitH[ex] = {
-            {120.0,1000},//double dist, int n1
-            {220.0,2000},
-            {320.0,3000},
-            {420.0,4000},
-            {520.0,5000}};
-
+    struct EnterExitStru POD[et] = {
+            {0.0,100,100},{0.0,200,100},{0.0,300,100},
+            {0.0,400,100},{0.0,500,100},{0.0,1000,100},
+            {100.0,200,100},{100.0,300,100},{100.0,400,100},//double Etd,double Exd int num
+            {100.0,500,100},{100.0,1000,100},{200.0,300,100},
+            {200.0,400,100},{200.0,500,100},{200.0,1000,100},
+            {300.0,400,100},{300.0,500,100},{300.0,1000,100},
+            {400.0,500,100},{400.0,1000,100},{500.0,1000,100},
+            };
 
 
     // get total number of trucks
     for ( l = 0; l< et; l ++)
     {
-        cout<<Enter[l].num<<endl; //total number of trucks simulated ( including enter);
-        tn = tn + Enter[l].num; //total number of trucks simulated ( including enter);
+        cout<<POD[l].num<<endl; //total number of trucks simulated ( including enter);
+        tn = tn + POD[l].num; //total number of trucks simulated ( including enter);
     }
 
     TruckPropStru Truck[tn] = {{0.0,0.0,0.0,0.0,0,0.0,0.0,0,0.0,0.0,L,DE}};
@@ -368,15 +365,14 @@ int main() {
 
     for ( l = 0; l < et; l ++)
     {
-        Truck[i].Entryd = Enter[l].dist;
-        Truck[i].Exitd = L;
+
 
         cout<<"eti"<<eti<<endl;
         cout<<l<<endl;
 
         cout<<"================="<<endl;
 
-        for ( i = n; i < n + ExitH[l].num; i++)
+        for ( i = n; i < n + POD[l].num; i++)
         {
             //Truck[i].WorkTime = k*u(e);
             Truck[i].speed = 70;  //assume speed is 70 mph
@@ -390,15 +386,14 @@ int main() {
             // short and long rest time
             Truck[i].RestShort = lgn2(e);// rest time distribution truck leaves the RestArea[a], round up
             Truck[i].RestLong = 12*u(e)+0.5;
-    /////////        ///
-
-
+            Truck[i].Entryd = POD[l].Etd;
+            Truck[i].Exitd = POD[l].Exd;
 
             Truck2Rest(&(Truck[i]), legal, RestArea, REE,m);
             cout<<i<<endl;
         }
 
-        n = n + Enter[l].num ;
+        n = n + POD[l].num ;
         cout<<"n = "<<n<<endl;
 
     }
