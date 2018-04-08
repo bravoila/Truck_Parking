@@ -232,9 +232,6 @@ int main() {
     int m = 20;                             // number of rest area
     int et = 21;                             // total number of combination of entrance and exit
                         // (assume 5 entr , 5 exit, plus initial entry and final exit) C7_2 = 7x6/(2x1)=21
-    double eti = 0;                          // initial entry point ( distant to the 0 point)
-    double etx = L;                         // exit point ( distant to the 0 point)
-
     int k = 24;                             // parameter to generate start time,a day is 24h
     int Violation = 0;                      //?potential number of trucks violate the regulation
     int t = 0;                              // time point for print out
@@ -362,12 +359,10 @@ int main() {
 
 */
 
+    // partial OD
 
     for ( l = 0; l < et; l ++)
     {
-
-
-        cout<<"eti"<<eti<<endl;
         cout<<l<<endl;
 
         cout<<"================="<<endl;
@@ -398,16 +393,8 @@ int main() {
 
     }
     //##################################################################################################
-    //exit the highway
 
-
-
-
-
-    // trucks leaving the highway
     // re-entr after long rest
-    // circle simulation
-    // tomorrow
 
 
     //test// under construction
