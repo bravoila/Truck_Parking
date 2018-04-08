@@ -299,11 +299,11 @@ int main() {
 
     // entrance{distance to point 0,number of trucks entering}
     struct EnterExitStru Enter[et] = {
-            {200.0,1000},//double dist, int n1
-            {400.0,2000},
-            {600.0,3000},
-            {700.0,4000},
-            {900.0,5000}};
+            {100.0,1000},//double dist, int n1
+            {200.0,2000},
+            {300.0,3000},
+            {400.0,4000},
+            {500.0,5000}};
 
     // get total number of trucks
     for ( l = 0; l< et; l ++)
