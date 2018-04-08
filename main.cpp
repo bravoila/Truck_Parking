@@ -162,14 +162,11 @@ void Truck2Rest(struct TruckPropStru *Truck, double legal, double eti, struct Re
     // the latter is the same as driving time function in the first part
     // truck driver driving time can be less than the regulation
 
-
     it = m - 1; //reset it value
-
     while(int(floor((RestArea[a].location + (Truck->BP2 - Truck->BP1 - Truck->RestShort)* Truck->speed)/ RestArea[it].location)) == 0)
     {
         it--;
     }
-
     b = it;
     cout<<b<<endl;
     // when
@@ -180,7 +177,6 @@ void Truck2Rest(struct TruckPropStru *Truck, double legal, double eti, struct Re
         // if the truck is beyond the observed segment (b = m-1)
         // or the truck cannot even reach the nearset rest area( b == a), then quit the function
     }
-
     Truck->RL = PreferL(a,b);
     Truck->BP2 = Truck->BP1 + Truck->RestShort + (RestArea[b].location/ Truck->speed);
     //Truck->RestLong = 4 + 12*u(e)+0.5;
@@ -209,7 +205,6 @@ int main() {
     //std::normal_distribution<double> distribution(5.0,2.0);   //normal distribution
     std::lognormal_distribution<double> lgn1(2,0.5);  // Log-normal distribution,use for arrival
     std::lognormal_distribution<double> lgn2(0.05,0.2);  // Log-normal distribution,use for short rest time
-
     //https://www.medcalc.org/manual/log-normal_distribution_functions.php
     std::poisson_distribution<int> pos(2.3);   //Poisson distribution
 
@@ -222,7 +217,7 @@ int main() {
     int j =0;                               // Iterate for RestArea combined with m
     int l =0;                               // Random Iterator
     double L = 1000.0;                      //Total simulation distance unit in mile
-    int n = 50000;                          //number of trucks to simulate entering from point 0
+    int n = 10000;                          //number of trucks to simulate entering from point 0
                                             // WARNING: the code cannot run the simulation above 100,000.(total number)
     int tn = n;                             // total number of trucks to simulate
 
@@ -304,11 +299,11 @@ int main() {
 
     // entrance{distance to point 0,number of trucks entering}
     struct EnterExitStru Enter[et] = {
-            {200.0,200},//double dist, int n1
-            {400.0,500},
-            {600.0,200},
-            {700.0,500},
-            {900.0,200}};
+            {200.0,1000},//double dist, int n1
+            {400.0,2000},
+            {600.0,3000},
+            {700.0,4000},
+            {900.0,5000}};
 
     // get total number of trucks
     for ( l = 0; l< et; l ++)
@@ -318,13 +313,11 @@ int main() {
     }
 
     TruckPropStru Truck[tn] = {{0.0,0.0,0.0,0.0,0,0.0,0.0,0,0.0,0.0,DE}};
-
     // trucks start from the entering point of highway
     for ( i = 0 ; i < n; i++)
     {
         //Truck[i].WorkTime = k*u(e);
         Truck[i].speed = 70;  //assume speed is 70 mph
-
         //################################  Set distributions   ##################################
         Truck[i].DRbefore = 3*u(e) ;// Driving time before entering the highway
         Truck[i].StartT = abs(lgn1(e)); //Arrival function at entrance
