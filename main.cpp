@@ -409,7 +409,6 @@ int main() {
             Truck2Rest(&(Truck[i]), RestArea, REE,m);
             cout<<i<<endl;
         }
-
         n = n + POD[l].num ;
         cout<<"n = "<<n<<endl;
 
@@ -453,14 +452,12 @@ int main() {
     for( j = 0; j < m ; j++)
     {
         outFile <<"Rest Area " << j<<"\n"<< endl;
-
         for ( t = 0; t<24; t++)
         {
             outFile <<std::right<<setw(20)<<t <<std::right<<setw(10)<< RestArea[j].Snum[t] << endl;
             //cout << t << " Number of trucks in long rest in rest area " << j << " is " << RestArea[j].Lnum[t] << endl;
         }
     }
-
     outFile.close();
     return 0;
 }
