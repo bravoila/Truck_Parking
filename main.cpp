@@ -106,7 +106,10 @@ void Truck2Rest(struct TruckPropStru *Truck, struct RestAreaStru RestArea[],vect
     //https://www.medcalc.org/manual/log-normal_distribution_functions.php
     std::poisson_distribution<int> pos(2.3);   //Poisson distribution
     std::normal_distribution<double> nor1(6,0.7);   //Normal distribution, use for driving time
-    std::normal_distribution<double> nor2(2,0.7);   //Normal distribution, use for driving time
+    std::normal_distribution<double> nor2(3,0.7);   //Normal distribution, use for driving time
+
+    //check above
+
     //https://homepage.divms.uiowa.edu/~mbognar/applets/normal.html
 
     int it = m - 1;                         //iterater
@@ -242,7 +245,7 @@ int main() {
     std::poisson_distribution<int> pos(2.3);   //Poisson distribution
 
     std::normal_distribution<double> nor1(6,0.7);   //Normal distribution, use for driving time
-    std::normal_distribution<double> nor2(2,0.7);   //Normal distribution, use for driving time
+    std::normal_distribution<double> nor2(3,0.7);   //Normal distribution, use for driving time
     //https://homepage.divms.uiowa.edu/~mbognar/applets/normal.html
 
     /*Parameters*/
