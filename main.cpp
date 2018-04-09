@@ -97,14 +97,7 @@ int PreferL(int local, int farest)        // preference,return the preferred par
 
 void Truck2Rest(struct TruckPropStru *Truck, struct RestAreaStru RestArea[],vector<double> &REE,int m)
 {
-    uniform_real_distribution<double> u(0, 1);          // 定义一个范围为0~1的浮点数分布类型
     default_random_engine e;                            // 定义一个随机数引擎
-    /*float a = 8*u(e);*/
-    //std::normal_distribution<double> distribution(5.0,2.0);   //normal distribution
-    std::lognormal_distribution<double> lgn1(2,0.5);  // Log-normal distribution,use for arrival
-    std::lognormal_distribution<double> lgn2(0.05,0.2);  // Log-normal distribution,use for short rest time
-    //https://www.medcalc.org/manual/log-normal_distribution_functions.php
-    std::poisson_distribution<int> pos(2.3);   //Poisson distribution
     std::normal_distribution<double> nor1(6,0.7);   //Normal distribution, use for driving time
     std::normal_distribution<double> nor2(3,0.7);   //Normal distribution, use for driving time
 
@@ -112,7 +105,7 @@ void Truck2Rest(struct TruckPropStru *Truck, struct RestAreaStru RestArea[],vect
 
     //https://homepage.divms.uiowa.edu/~mbognar/applets/normal.html
 
-    int it = m - 1;                         //iterater
+    int it = m - 1;                  //iterator
     int a = 0;                       // store the RestArea number of SHORT rest
     int b = 0;                       // store the RestArea number of LONG rest
     int s1 = 0;                      // store the entering time of SHORT and LONG rest
@@ -191,7 +184,6 @@ void Truck2Rest(struct TruckPropStru *Truck, struct RestAreaStru RestArea[],vect
         loc1 = Truck->Entryd;
     }
 
-
     it = m ; //reset it value
     while(int(floor((loc1 + (Truck->BP2 - Truck->BP1 - Truck->RestShort)* Truck->speed)/ RestArea[it].location)) == 0)
     {//test wether the truck has left the segment
@@ -243,15 +235,12 @@ int main() {
     std::lognormal_distribution<double> lgn2(0.05,0.2);  // Log-normal distribution,use for short rest time
     //https://www.medcalc.org/manual/log-normal_distribution_functions.php
     std::poisson_distribution<int> pos(2.3);   //Poisson distribution
-
-    std::normal_distribution<double> nor1(6,0.7);   //Normal distribution, use for driving time
-    std::normal_distribution<double> nor2(3,0.7);   //Normal distribution, use for driving time
     //https://homepage.divms.uiowa.edu/~mbognar/applets/normal.html
 
     /*Parameters*/
-    int i =0;                               // Iterate for Truck combined with n
-    int j =0;                               // Iterate for RestArea combined with m
-    int l =0;                               // Random Iterator
+    int i = 0;                               // Iterate for Truck combined with n
+    int j = 0;                               // Iterate for RestArea combined with m
+    int l = 0;                               // Random Iterator
     double L = 1000.0;                      //Total simulation distance unit in mile
     int n = 10000;                          //number of trucks to simulate entering from point 0
                                             // WARNING: the code cannot run the simulation above 100,000.(total number)
@@ -270,8 +259,6 @@ int main() {
 
     double Spacing = L/m;            // Rest area spacing interval
     int TimeInv = 1;                        // Time interval
-    int temp1 = 0;
-
 
     // USDOT HOS Regulation
     RegulationStru Reg = {8.0,11.0};
@@ -289,22 +276,22 @@ int main() {
     */
     RestAreaStru RestArea[m];
 
-    ifstream infile("RestA_info.txt", ios::in);
-    if(!infile)
+    ifstream infile_r("RestA_info.txt", ios::in);
+    if(!infile_r)
     {
-        cout << "Error: opening file fail" << endl;
+        cout << "Error: opening RestArea file fail" << endl;
         exit(1);
     }
-    while(!infile.eof() && j < m)
+    while(!infile_r.eof() && j < m)
     {
-        infile >> RestArea[j].id >> RestArea[j].location;
+        infile_r >> RestArea[j].id >> RestArea[j].location;
         for( i = 0 ; i< 24 ; i++)
         {
-            infile >> RestArea[j].Snum[i] ;
+            infile_r >> RestArea[j].Snum[i] ;
         }
         for( i = 0 ; i< 24 ; i++)
         {
-            infile >>  RestArea[j].Lnum[i];
+            infile_r >>  RestArea[j].Lnum[i];
         }
         j++;
 
@@ -328,11 +315,13 @@ int main() {
         cout<<"\n"<<endl;
     }
     */
-    infile.close();
+    infile_r.close();
+
 
 
     // entrance{distance to point 0,number of trucks entering}
-    struct EnterExitStru POD[et] = {
+    struct EnterExitStru POD[et];
+    /*= {
             {0.0,100,100},{0.0,200,100},{0.0,300,100},
             {0.0,400,100},{0.0,500,100},{0.0,1000,100},
             {100.0,200,100},{100.0,300,100},{100.0,400,100},//double Etd,double Exd int num
@@ -341,6 +330,28 @@ int main() {
             {300.0,400,100},{300.0,500,100},{300.0,1000,100},
             {400.0,500,100},{400.0,1000,100},{500.0,1000,100},
             };
+
+    */
+    ifstream infile_p("POD_info.txt", ios::in);
+    if(!infile_p)
+    {
+        cout << "Error: opening POD file fail" << endl;
+        exit(1);
+    }
+    while(!infile_p.eof() && j < m)
+    {
+        infile_p >> RestArea[j].id >> RestArea[j].location;
+        for( i = 0 ; i< 24 ; i++)
+        {
+            infile_p >> RestArea[j].Snum[i] ;
+        }
+        for( i = 0 ; i< 24 ; i++)
+        {
+            infile_p >>  RestArea[j].Lnum[i];
+        }
+        j++;
+
+    }
 
 
     // get total number of trucks
@@ -423,7 +434,6 @@ int main() {
     //{
     //    cout << *ii << ' '<<endl;
     //}
-
 
 
     // output to txt file
