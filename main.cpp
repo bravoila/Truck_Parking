@@ -349,7 +349,6 @@ int main() {
         //Truck[i].WorkTime = k*u(e);
         for ( i = 0; i < n ; i++) {
             Truck[i].speed = 70;  //assume speed is 70 mph
-
             //################################  Set distributions   ##################################
             Truck[i].StartT = abs(lgn1(e)); //Arrival function, in the future u(e) can be replaced by traffic flow function
             Truck[i].DRbefore = 3 * u(e);// Driving time before entering the highway
