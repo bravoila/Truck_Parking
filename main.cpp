@@ -19,6 +19,13 @@ struct TruckPropStru
     double DRbefore;        //Driving time before entering the highway
     double StartT;          //Time entering the highway
     double BP1;             //Time when driver decides to take the short rest
+
+    //consider combine BP1, BP2 to BP[i]
+    //consider combine RestShort, RestLong to Rest[i]
+    //consider combine RS,RL to R[i]
+    //then re-enter and multi resting is possible
+    // end condition: truck driving out of observing segment
+
     int RS;                  // Rest area number for short rest
     double RestShort;       //Duration of short break
     double BP2;             //Time when driver decides to take the long rest
