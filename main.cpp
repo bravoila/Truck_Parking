@@ -15,22 +15,20 @@ enum STATUS { DE, DR, SR, PR }; // DE is the default
 
 struct TruckPropStru
 {
-    double speed;           //Driving speed
-    double DRbefore;        //Driving time before entering the highway
-    double StartT;          //Time entering the highway
-    double BP1;             //Time when driver decides to take the short rest
+    double speed;               //Driving speed
+    double DRbefore;            //Driving time before entering the highway
+    double StartT;              //Time entering the highway
+
+    vector<double> BP;          //Time when driver decides to take rest
+    vector<int> RN;             // Rest area number for trucker's rest
+    vector<double> RestTime;    // Duration of break
 
     //consider combine BP1, BP2 to BP[i]
     //consider combine RestShort, RestLong to Rest[i]
     //consider combine RS,RL to R[i]
     //then re-enter and multi resting is possible
     // end condition: truck driving out of observing segment
-
-    int RS;                  // Rest area number for short rest
-    double RestShort;       //Duration of short break
-    double BP2;             //Time when driver decides to take the long rest
-    int RL;                  // Rest area number for short rest
-    double RestLong;        //Duration of long break
+    //
     double Entryd;              //entry distance (distance to point 0) default value =0
     double Exitd;              //exit distance (distance to point 0) default value =L
     STATUS stu;
@@ -111,6 +109,7 @@ void Truck2Rest(struct TruckPropStru *Truck, struct RestAreaStru RestArea[],vect
     int it = m - 1;                  //iterator
     int a = 0;                       // store the RestArea number of SHORT rest
     int b = 0;                       // store the RestArea number of LONG rest
+    unsigned se = 0;                      // for the count
     int s1 = 0;                      // store the entering time of SHORT and LONG rest
     int s2 = 0;                      // store the leaving time number of SHORT LONG rest, in 1 hour interval
     double legal = 0;                   // record legal driving time
@@ -127,7 +126,7 @@ void Truck2Rest(struct TruckPropStru *Truck, struct RestAreaStru RestArea[],vect
 
     if(Truck->DRbefore < Reg.MaxWS) {
         legal = min((Reg.MaxWS - Truck->DRbefore ), nor1(e));// nor1(e) is the first part driving time
-        Truck->BP1 = Truck->StartT + legal;
+        Truck->BP.push_back(Truck->StartT + legal);
 
         // allocate the rest area to decide the truck BP1
         // truck cannot park randomly, a is actually the last RestArea number
@@ -143,7 +142,7 @@ void Truck2Rest(struct TruckPropStru *Truck, struct RestAreaStru RestArea[],vect
         // when
         if (a == m - 1 || a < 0 || RestArea[a].location < Truck->Entryd || RestArea[a].location == Truck->Entryd) {
             cout << "q" << endl;
-            Truck->RS = 66;//error code for outside the highway section for the first part
+            Truck->RN.push_back(66);//error code for outside the highway section for the first part
             return;
             // if the truck is beyond the observed segment (a = m-1)
             // or before the entry point(RestArea[a].location < eti||RestArea[a].location == eti),
@@ -155,15 +154,15 @@ void Truck2Rest(struct TruckPropStru *Truck, struct RestAreaStru RestArea[],vect
         //update BP1 value
         //similar to BP1
         //a is nearest RestArea
-        Truck->RS = PreferS(a);     //rest area for short rest
+        Truck->RN.push_back(PreferS(a));     //rest area for short rest
 
-        s1 = int(floor(Truck->BP1));//Time truck enters the RestArea[a], round down
-        s2 = int(ceil(Truck->BP1 + Truck->RestShort));//Time the truck leave the rest area, round up
+        s1 = int(floor(Truck->BP.back()));//Time truck enters the RestArea[a], round down
+        s2 = int(ceil(Truck->BP.back() + Truck->RestTime.at(Truck->RestTime.size()-2)));//Time the truck leave the rest area, round up
         if (s1 > 24 || s2 > 24) {
-            Truck->RS = 77;
+            Truck->RN.push_back(77);
             return;
         }
-        Truck->BP1 = Truck->StartT + (RestArea[a].location - Truck->Entryd) / Truck->speed;
+        Truck->BP.back() = Truck->StartT + (RestArea[a].location - Truck->Entryd) / Truck->speed;
         // short rest time
         //Truck->RestShort = lgn2(e); rest time distribution truck leaves the RestArea[a], round up
 
@@ -172,23 +171,27 @@ void Truck2Rest(struct TruckPropStru *Truck, struct RestAreaStru RestArea[],vect
             RestArea[a].Snum[s1] = RestArea[a].Snum[s1] + 1;
             s1++;
         }
-        Truck->BP2 = Truck->BP1 + Truck->RestShort + min((Reg.MaxWL - Truck->BP1 + Truck->StartT ), nor2(e));
+
+        //for next rest part(long rest) ####################
+        Truck->BP.push_back(Truck->BP.back() + Truck->RestTime.at(Truck->RestTime.size()-2) + min((Reg.MaxWL - Truck->BP.back() + Truck->StartT ), nor2(e)));
         // the latter is the same as driving time function in the first part
         // truck driver driving time can be less than the regulation
         loc1 = RestArea[a].location;
 
+        se++; //??????????
+
     }else{// when the truck only have long rest in the observed section
         legal = min((Reg.MaxWL - Truck->DRbefore ), nor1(e));// nor1(e) is the first part driving time
-        Truck->BP1 = Truck->StartT;
-        Truck->RS = 55;// code for only observing the second part
-        Truck->RestShort = 0;
-        Truck->BP2 = Truck->StartT + legal;
+        Truck->BP.push_back(Truck->StartT);
+        Truck->RN.push_back(55);// code for only observing the second part
+        Truck->RestTime.at(Truck->RestTime.size()-2) = 0;
+        Truck->BP.push_back(Truck->StartT + legal);
         a = 55;// for continuing the following code
         loc1 = Truck->Entryd;
     }
 
     it = m ; //reset it value
-    while(int(floor((loc1 + (Truck->BP2 - Truck->BP1 - Truck->RestShort)* Truck->speed)/ RestArea[it].location)) == 0)
+    while(int(floor((loc1 + (Truck->BP.at(Truck->BP.size()-2) - Truck->BP.back() - Truck->RestTime.at(Truck->RestTime.size()-2))* Truck->speed)/ RestArea[it].location)) == 0)
     {//test whether the truck has left the segment
         it--;
     }
@@ -197,21 +200,22 @@ void Truck2Rest(struct TruckPropStru *Truck, struct RestAreaStru RestArea[],vect
     // when outside the segment
     if(b == m-1 || b == a || RestArea[b].location < Truck->Entryd)
     {
-        Truck->RL = 88;// code for outside the highway section for the second part
+        Truck->RN.push_back(88);// code for outside the highway section for the second part
         cout<<"qq"<<endl;
         return;
         // if the truck is beyond the observed segment (b = m-1)
         // or the truck cannot even reach the nearset rest area( b == a), then quit the function
     }
-    Truck->RL = PreferL(a,b);
-    Truck->BP2 = Truck->BP1 + Truck->RestShort + ((RestArea[b].location - RestArea[a].location )/ Truck->speed);
+    Truck->RN.push_back(PreferL(a,b));
+
+    Truck->BP.back() = Truck->BP.back() + Truck->RestTime.back() + ((RestArea[b].location - RestArea[a].location )/ Truck->speed);
     //Truck->RestLong = 4 + 12*u(e)+0.5;
 
-    s1 = int(floor(Truck->BP2));//Time truck enters the RestArea[b], round down
-    s2 = int(ceil(Truck->BP2 + Truck->RestLong));//Time truck leaves the RestArea[b]
+    s1 = int(floor(Truck->BP.back()));//Time truck enters the RestArea[b], round down
+    s2 = int(ceil(Truck->BP.back() + Truck->RestTime.back()));//Time truck leaves the RestArea[b]
     if(s1 > 24)
     {
-        Truck->RL = 99;//code for truck leave the segment
+        Truck->RN.push_back(99);//code for truck leave the segment
         return;
     }
 
@@ -250,8 +254,6 @@ int main() {
     int m = 20;                              // number of rest area
     int et = 21;                             // total number of combination of entrance and exit
                         // (assume 5 entr , 5 exit, plus initial entry and final exit) C7_2 = 7x6/(2x1)=21
-    int k = 24;                              // parameter to generate start time,a day is 24h
-    int Violation = 0;                       //?potential number of trucks violate the regulation
     int t = 0;                               // time point for print out
     vector<double> LDH = {};                 //Legal driving time
     vector<double> REE = {};                 //save leaving time (re-enter point for each truck after long rest)
@@ -356,7 +358,8 @@ int main() {
         tn = tn + POD[l].num; //total number of trucks simulated ( including enter);
     }
 
-    TruckPropStru Truck[tn] = {{0.0,0.0,0.0,0.0,0,0.0,0.0,0,0.0,0.0,L,DE}};
+    TruckPropStru Truck[tn];
+
     // trucks start from the entering point of highway and drive through the whole section
     for ( i = 0 ; i < n; i++)
     {
@@ -367,10 +370,13 @@ int main() {
         Truck[i].StartT = abs(lgn1(e)); //Arrival function at entrance
                                         //in the future u(e) can be replaced by traffic flow function
         // short and long rest time
-        Truck[i].RestShort = lgn2(e);// rest time distribution truck leaves the RestArea[a], round up
-        Truck[i].RestLong = 4 + 12*u(e)+0.5;
+        Truck[i].RestTime.push_back(lgn2(e));// rest time distribution truck leaves the RestArea[a], round up
+        Truck[i].RestTime.push_back(4 + 12*u(e)+0.5);
+
         Truck[i].Entryd = 0;
         Truck[i].Exitd = L;
+
+        Truck[i].stu = DR;
 
         Truck2Rest(&(Truck[i]), RestArea,REE,m);
     }
@@ -405,12 +411,15 @@ int main() {
             Truck[i].StartT = abs(lgn1(e)); //Arrival function, in the future u(e) can be replaced by traffic flow function
 
             // short and long rest time
-            Truck[i].RestShort = lgn2(e);// rest time distribution truck leaves the RestArea[a], round up
-            Truck[i].RestLong = 12*u(e)+0.5;
+            Truck[i].RestTime.push_back(lgn2(e));// rest time distribution truck leaves the RestArea[a], round up
+            Truck[i].RestTime.push_back(12*u(e)+0.5);
             Truck[i].Entryd = POD[l].Etd;
             Truck[i].Exitd = POD[l].Exd;
 
+            Truck[i].stu = DR;
+
             Truck2Rest(&(Truck[i]), RestArea, REE,m);
+
             cout<<i<<endl;
         }
         n = n + POD[l].num ;
@@ -432,13 +441,18 @@ int main() {
             <<"BP1"<<std::right<<setw(13)<<"ShortRest"<<std::right<<setw(15)<<"FirstParking"<<std::right<<setw(8)\
             <<"BP2"<<std::right<<setw(18)<<"SecondParking"<<std::right<<setw(10)<<"LongRest"<<std::right<<setw(8)\
             <<"Entry"<<std::right<<setw(8)<<"Exit"<<"\n";
+
+
     for( i = 0; i < tn; i++)
     {
-        outFile <<"Truck "<<std::right<<setw(5)<<i<<std::right<<setw(10)<< Truck[i].StartT <<std::right<<setw(10)\
-                <<Truck[i].BP1<<std::right<<setw(10)<< Truck[i].RestShort<<std::right<<setw(10)<<Truck[i].RS<<std::right<<setw(15)\
-                <<Truck[i].BP2<<std::right<<setw(12)<<Truck[i].RL<<std::right<<setw(15)<<Truck[i].RestLong<<std::right<<setw(10)\
-                <<Truck[i].Entryd<<std::right<<setw(10)<<Truck[i].Exitd<<endl;
+        outFile <<"Truck "<<std::right<<setw(5)<<i<<std::right<<setw(10)<< Truck[i].StartT <<std::right<<setw(10);
+                for (unsigned it = 0; it < Truck[i].BP.size(); it++)
+                {
+                    outFile<<Truck[i].BP.at(it)<<std::right<<setw(12)<< Truck[i].RestTime.at(it)<<std::right<<setw(10)<<Truck[i].RN.at(it)<<std::right<<setw(15);
+                }
+                outFile<<Truck[i].Entryd<<std::right<<setw(10)<<Truck[i].Exitd<<endl;
     }
+
     outFile.close();
 
     //output RestArea
