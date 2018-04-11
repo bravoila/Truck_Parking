@@ -5,7 +5,7 @@ Input files are in cmake-build-debug for convenience.
 POD_info is for partial OD data.
 RestA_info contains the rest area infomation.
 
-Output file is RestArea.txt and Truck.txt.
+Output file are RestArea.txt and Truck.txt.
 
 All function are in the main.cpp. 
 method2.cpp, parctice.cpp and WangHeader.h is not in use right now.
