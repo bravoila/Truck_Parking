@@ -260,9 +260,6 @@ int main() {
     //initialization
     // Create rest area
 
-    // USDOT HOS Regulation
-    RegulationStru Reg = {8.0,11.0};
-
     /*
     RestAreaStru RestArea[m] ={{0,0.0,{0},{0}}};
     for ( j = 0; j < m ; j++)
@@ -457,9 +454,6 @@ int main() {
     // re-entr after long rest
     // continue here
     // under construction
-
-
-
 
     outFile.close();
 
