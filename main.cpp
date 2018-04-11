@@ -13,6 +13,11 @@ using namespace std;
 enum STATUS { DE, DR, SR, PR }; // DE is the default
 //Three modes: driving, searching for parking, parking
 
+//To do
+// Occupied rate( consider capacity)
+// Documentation
+// Header file
+
 struct TruckPropStru
 {
     double speed;               //Driving speed
@@ -248,7 +253,7 @@ int main() {
     int j = 0;                               // Iterate for RestArea combined with m
     int l = 0;                               // Random Iterator
     double L = 1000.0;                       //Total simulation distance unit in mile
-    int n = 10;                           //number of trucks to simulate entering from point 0
+    int n = 40000;                           //number of trucks to simulate entering from point 0
                                              // WARNING: the code cannot run the simulation above 100,000.(total number)
     int tn = n;                              // total number of trucks to simulate
     int m = 20;                              // number of rest area
