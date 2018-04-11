@@ -101,8 +101,8 @@ int PreferL(int local, int farest)        // preference,return the preferred par
 void Truck2Rest(struct TruckPropStru *Truck, struct RestAreaStru RestArea[],vector<double> &REE,int m)
 {
     default_random_engine e;                            // 定义一个随机数引擎
-    std::normal_distribution<double> nor1(6,0.7);   //Normal distribution, use for driving time
-    std::normal_distribution<double> nor2(3,0.7);   //Normal distribution, use for driving time
+    normal_distribution<double> nor1(6,0.7);   //Normal distribution, use for driving time
+    normal_distribution<double> nor2(3,0.7);   //Normal distribution, use for driving time
 
     //https://homepage.divms.uiowa.edu/~mbognar/applets/normal.html
 
@@ -191,7 +191,7 @@ void Truck2Rest(struct TruckPropStru *Truck, struct RestAreaStru RestArea[],vect
     }
 
     it = m ; //reset it value
-    while(int(floor((loc1 + (Truck->BP.at(Truck->BP.size()-2) - Truck->BP.back() - Truck->RestTime.at(Truck->RestTime.size()-2))* Truck->speed)/ RestArea[it].location)) == 0)
+    while(int(floor((loc1 + (Truck->BP.back() - Truck->BP.at(Truck->BP.size()-2)  - Truck->RestTime.at(Truck->RestTime.size()-2))* Truck->speed)/ RestArea[it].location)) == 0)
     {//test whether the truck has left the segment
         it--;
     }
@@ -208,7 +208,7 @@ void Truck2Rest(struct TruckPropStru *Truck, struct RestAreaStru RestArea[],vect
     }
     Truck->RN.push_back(PreferL(a,b));
 
-    Truck->BP.back() = Truck->BP.back() + Truck->RestTime.back() + ((RestArea[b].location - RestArea[a].location )/ Truck->speed);
+    Truck->BP.back() = Truck->BP.at(Truck->BP.size()-2) + Truck->RestTime.at(Truck->RestTime.size()-2)  + (RestArea[b].location - RestArea[a].location )/ Truck->speed;
     //Truck->RestLong = 4 + 12*u(e)+0.5;
 
     s1 = int(floor(Truck->BP.back()));//Time truck enters the RestArea[b], round down
@@ -237,10 +237,10 @@ int main() {
     default_random_engine e;                            // 定义一个随机数引擎
     /*float a = 8*u(e);*/
     //std::normal_distribution<double> distribution(5.0,2.0);   //normal distribution
-    std::lognormal_distribution<double> lgn1(2,0.5);  // Log-normal distribution,use for arrival
-    std::lognormal_distribution<double> lgn2(0.05,0.2);  // Log-normal distribution,use for short rest time
+    lognormal_distribution<double> lgn1(2,0.5);  // Log-normal distribution,use for arrival
+    lognormal_distribution<double> lgn2(0.05,0.2);  // Log-normal distribution,use for short rest time
     //https://www.medcalc.org/manual/log-normal_distribution_functions.php
-    std::poisson_distribution<int> pos(2.3);   //Poisson distribution
+    poisson_distribution<int> pos(2.3);   //Poisson distribution
     //https://homepage.divms.uiowa.edu/~mbognar/applets/normal.html
 
     /*Parameters*/
@@ -248,7 +248,7 @@ int main() {
     int j = 0;                               // Iterate for RestArea combined with m
     int l = 0;                               // Random Iterator
     double L = 1000.0;                       //Total simulation distance unit in mile
-    int n = 10000;                           //number of trucks to simulate entering from point 0
+    int n = 10;                           //number of trucks to simulate entering from point 0
                                              // WARNING: the code cannot run the simulation above 100,000.(total number)
     int tn = n;                              // total number of trucks to simulate
     int m = 20;                              // number of rest area
@@ -351,52 +351,64 @@ int main() {
     infile_p.close();
 
 
-    // get total number of trucks
+    // get total number of trucks,may be deleted later
     for ( l = 0; l< et; l ++)
     {
         cout<<"POD"<<l<<"\t"<<POD[l].num<<endl; //total number of trucks simulated ( including enter);
         tn = tn + POD[l].num; //total number of trucks simulated ( including enter);
     }
 
-    TruckPropStru Truck[tn];
+    //consider for loop later
+
+    outFile.open("Truck.txt");
+    outFile << std::setprecision(2) << std::fixed; // keep two decimals
+    //print title
+    outFile <<"Truck"<<std::right<<setw(7)<<"Num"<<std::right<<setw(10)<<"StartT"<<std::right<<setw(8)\
+            <<"BP1"<<std::right<<setw(13)<<"ShortRest"<<std::right<<setw(15)<<"FirstParking"<<std::right<<setw(8)\
+            <<"BP2"<<std::right<<setw(18)<<"SecondParking"<<std::right<<setw(10)<<"LongRest"<<std::right<<setw(8)\
+            <<"Entry"<<std::right<<setw(8)<<"Exit"<<"\n";
+
+    TruckPropStru Truck;
 
     // trucks start from the entering point of highway and drive through the whole section
     for ( i = 0 ; i < n; i++)
     {
         //Truck[i].WorkTime = k*u(e);
-        Truck[i].speed = 60;  //assume speed is 60 mph
+        Truck.speed = 60;  //assume speed is 60 mph
         //################################  Set distributions   ##################################
-        Truck[i].DRbefore = 11*u(e) ;// Driving time before entering the highway
-        Truck[i].StartT = abs(lgn1(e)); //Arrival function at entrance
+        Truck.DRbefore = 11*u(e) ;// Driving time before entering the highway
+        Truck.StartT = abs(lgn1(e)); //Arrival function at entrance
                                         //in the future u(e) can be replaced by traffic flow function
         // short and long rest time
-        Truck[i].RestTime.push_back(lgn2(e));// rest time distribution truck leaves the RestArea[a], round up
-        Truck[i].RestTime.push_back(4 + 12*u(e)+0.5);
+        Truck.RestTime.push_back(lgn2(e));// rest time distribution truck leaves the RestArea[a], round up
+        Truck.RestTime.push_back(4 + 12*u(e)+0.5);
 
-        Truck[i].Entryd = 0;
-        Truck[i].Exitd = L;
+        Truck.Entryd = 0;
+        Truck.Exitd = L;
 
-        Truck[i].stu = DR;
+        Truck.stu = DR;
 
-        Truck2Rest(&(Truck[i]), RestArea,REE,m);
+        outFile <<"Truck "<<std::right<<setw(5)<<i<<std::right<<setw(10)<< Truck.StartT <<std::right<<setw(10);
+
+        Truck2Rest(&Truck, RestArea,REE,m);//function
+
+        cout<<"!!!!!!!!!!!!!SIZE"<<Truck.BP.size()<<endl;
+
+        for (unsigned it = 0; it < Truck.BP.size(); it++)
+            {
+                outFile<<Truck.BP.at(it)<<std::right<<setw(12)<< Truck.RestTime.at(it)<<std::right<<setw(10)<<Truck.RN.at(it)<<std::right<<setw(15);
+            }
+
+            outFile<<Truck.Entryd<<std::right<<setw(10)<<Truck.Exitd<<endl;
+
+        //clear and reset for next loop
+        Truck.BP.clear();          //Time when driver decides to take rest
+        Truck.RN.clear();             // Rest area number for trucker's rest
+        Truck.RestTime.clear();    // Duration of break
     }
 
-    // trucks start from the rest area after long rest(re-enter from rest area)
-/*
-        //Truck[i].WorkTime = k*u(e);
-        for ( i = 0; i < n ; i++) {
-            Truck[i].speed = 70;  //assume speed is 70 mph
-            //################################  Set distributions   ##################################
-            Truck[i].StartT = abs(lgn1(e)); //Arrival function, in the future u(e) can be replaced by traffic flow function
-            Truck[i].DRbefore = 3 * u(e);// Driving time before entering the highway
-            legal = min((Reg.MaxWS - Truck[i].DRbefore ), nor1(e));// nor1(e) is the first part driving time
-            LDH.push_back(legal);          // add to LDH vector
-        }
-
-*/
 
     // partial OD
-
     for ( l = 0; l < et; l ++)
     {
         cout<<l<<endl;
@@ -405,22 +417,37 @@ int main() {
         for ( i = n; i < n + POD[l].num; i++)
         {
             //Truck[i].WorkTime = k*u(e);
-            Truck[i].speed = 70;  //assume speed is 70 mph
+            Truck.speed = 70;  //assume speed is 70 mph
             //################################  Set distributions   ##################################//
-            Truck[i].DRbefore = 3*u(e) ;// Driving time before entering the highway
-            Truck[i].StartT = abs(lgn1(e)); //Arrival function, in the future u(e) can be replaced by traffic flow function
+            Truck.DRbefore = 3*u(e) ;// Driving time before entering the highway
+            Truck.StartT = abs(lgn1(e)); //Arrival function, in the future u(e) can be replaced by traffic flow function
 
             // short and long rest time
-            Truck[i].RestTime.push_back(lgn2(e));// rest time distribution truck leaves the RestArea[a], round up
-            Truck[i].RestTime.push_back(12*u(e)+0.5);
-            Truck[i].Entryd = POD[l].Etd;
-            Truck[i].Exitd = POD[l].Exd;
+            Truck.RestTime.push_back(lgn2(e));// rest time distribution truck leaves the RestArea[a], round up
+            Truck.RestTime.push_back(12*u(e)+0.5);
+            Truck.Entryd = POD[l].Etd;
+            Truck.Exitd = POD[l].Exd;
 
-            Truck[i].stu = DR;
+            Truck.stu = DR;
 
-            Truck2Rest(&(Truck[i]), RestArea, REE,m);
+            outFile <<"Truck "<<std::right<<setw(5)<<i<<std::right<<setw(10)<< Truck.StartT <<std::right<<setw(10);
 
-            cout<<i<<endl;
+            Truck2Rest(&Truck, RestArea,REE,m);//function
+
+            cout<<"!!!!!!!!!!!!!SIZE"<<Truck.BP.size()<<endl;
+
+            for (unsigned it = 0; it < Truck.BP.size(); it++)
+            {
+                outFile<<Truck.BP.at(it)<<std::right<<setw(12)<< Truck.RestTime.at(it)<<std::right<<setw(10)<<Truck.RN.at(it)<<std::right<<setw(15);
+            }
+
+            outFile<<Truck.Entryd<<std::right<<setw(10)<<Truck.Exitd<<endl;
+
+            //clear and reset for next loop
+            Truck.BP.clear();          //Time when driver decides to take rest
+            Truck.RN.clear();             // Rest area number for trucker's rest
+            Truck.RestTime.clear();    // Duration of break
+
         }
         n = n + POD[l].num ;
         cout<<"n = "<<n<<endl;
@@ -432,26 +459,7 @@ int main() {
     // under construction
 
 
-    // output to txt file
-    // output truck file
-    outFile.open("Truck.txt");
-    outFile << std::setprecision(2) << std::fixed; // keep two decimals
-    //print title
-    outFile <<"Truck"<<std::right<<setw(7)<<"Num"<<std::right<<setw(10)<<"StartT"<<std::right<<setw(8)\
-            <<"BP1"<<std::right<<setw(13)<<"ShortRest"<<std::right<<setw(15)<<"FirstParking"<<std::right<<setw(8)\
-            <<"BP2"<<std::right<<setw(18)<<"SecondParking"<<std::right<<setw(10)<<"LongRest"<<std::right<<setw(8)\
-            <<"Entry"<<std::right<<setw(8)<<"Exit"<<"\n";
 
-
-    for( i = 0; i < tn; i++)
-    {
-        outFile <<"Truck "<<std::right<<setw(5)<<i<<std::right<<setw(10)<< Truck[i].StartT <<std::right<<setw(10);
-                for (unsigned it = 0; it < Truck[i].BP.size(); it++)
-                {
-                    outFile<<Truck[i].BP.at(it)<<std::right<<setw(12)<< Truck[i].RestTime.at(it)<<std::right<<setw(10)<<Truck[i].RN.at(it)<<std::right<<setw(15);
-                }
-                outFile<<Truck[i].Entryd<<std::right<<setw(10)<<Truck[i].Exitd<<endl;
-    }
 
     outFile.close();
 
@@ -463,7 +471,7 @@ int main() {
     for( j = 0; j < m ; j++)
     {
         outFile <<"Rest Area " << j<<"\n"<< endl;
-        for ( t = 0; t<24; t++)
+        for ( t = 0; t < 24; t++)
         {
             outFile <<std::right<<setw(20)<<t <<std::right<<setw(10)<< RestArea[j].Snum[t] << endl;
             //cout << t << " Number of trucks in long rest in rest area " << j << " is " << RestArea[j].Lnum[t] << endl;
