@@ -464,6 +464,7 @@ int main() {
 
     TruckPropStru Truck;
 
+
     // trucks start from the entering point of highway and drive through the whole section
     for ( i = 0 ; i < n; i++)
     {
