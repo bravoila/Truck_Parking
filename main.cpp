@@ -484,7 +484,6 @@ int main() {
         Truck2RestS(&Truck, RestArea,REE,m);//function
         cout<<"!!!!!!!!!!!!!SIZE"<<Truck.BP.size()<<endl;
 
-
         while(count < 10 && REE.back() != 0 )
         {
             //################################  Set distributions   ##################################
@@ -502,7 +501,6 @@ int main() {
             cout<<"i"<<i<<"count"<<count<<endl;
 
         }
-
 
         for (unsigned it = 0; it < Truck.BP.size(); it++)
             {
