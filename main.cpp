@@ -9,6 +9,7 @@
 #include <iomanip>
 #include <algorithm>
 using namespace std;
+const double L = 1000.0;                       //Total simulation distance unit in mile
 
 enum STATUS { DE, DR, SR, PR }; // DE is the default
 //Three modes: driving, searching for parking, parking
@@ -93,13 +94,13 @@ int PreferL(int local, int farest)        // preference,return the preferred par
     }
     return temp;
 }
-//Calculate the location between each rest area
+//Calculate the location between each rest area, from rest area i to rest are j
 double DistRR(int i,int j,struct RestAreaStru RestArea[])
 {
     if(j > i ){
         return RestArea[j].location - RestArea[i].location;
     }else{
-        return RestArea[i].location - RestArea[j].location;
+        return L + RestArea[i].location - RestArea[j].location;
     }
 }
 
@@ -133,7 +134,7 @@ void Truck2RestS(struct TruckPropStru *Truck, struct RestAreaStru RestArea[],vec
 
     cout<<"it begin"<<it<<endl;
     cout<<"Truck Exitd"<<Truck->Exitd<<endl;
-    `
+
     //find the nearest rest area before location of exit, determine the range
     while((floor((Truck->Exitd)/ RestArea[it].location)) == 0)
     {
@@ -253,6 +254,7 @@ void Truck2RestS(struct TruckPropStru *Truck, struct RestAreaStru RestArea[],vec
 //CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 //Truck2RestC is used to simulate circular, start from one rest area to another.
 // function for circluar highway (loop)
+// from rest area to rest area
 void Truck2RestC(struct TruckPropStru *Truck, struct RestAreaStru RestArea[],vector<double> &REE,int m)
 {
     default_random_engine e;                            // 定义一个随机数引擎
@@ -394,7 +396,6 @@ int main() {
     int j = 0;                               // Iterate for RestArea combined with m
     int l = 0;                               // Random Iterator
     int count = 0;                      // for the count, run times of truck
-    double L = 1000.0;                       //Total simulation distance unit in mile
     int n = 100;                           //number of trucks to simulate entering from point 0
                                              // WARNING: the code cannot run the simulation above 100,000.(total number)
     int tn = n;                              // total number of trucks to simulate
