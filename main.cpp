@@ -93,6 +93,15 @@ int PreferL(int local, int farest)        // preference,return the preferred par
     }
     return temp;
 }
+//Calculate the location between each rest area
+double DistRR(int i,int j,struct RestAreaStru RestArea[])
+{
+    if(j > i ){
+        return RestArea[j].location - RestArea[i].location;
+    }else{
+        return RestArea[i].location - RestArea[j].location;
+    }
+}
 
 /*################################  Truck2Rest Function   ##################################*/
 
@@ -124,6 +133,7 @@ void Truck2RestS(struct TruckPropStru *Truck, struct RestAreaStru RestArea[],vec
 
     cout<<"it begin"<<it<<endl;
     cout<<"Truck Exitd"<<Truck->Exitd<<endl;
+    `
     //find the nearest rest area before location of exit, determine the range
     while((floor((Truck->Exitd)/ RestArea[it].location)) == 0)
     {
@@ -240,7 +250,8 @@ void Truck2RestS(struct TruckPropStru *Truck, struct RestAreaStru RestArea[],vec
     REE.push_back(Truck->BP.back() + Truck->RestTime.back());  //save leaving time (re-enter after long rest)###############################################
 
 }
-
+//CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+//Truck2RestC is used to simulate circular, start from one rest area to another.
 // function for circluar highway (loop)
 void Truck2RestC(struct TruckPropStru *Truck, struct RestAreaStru RestArea[],vector<double> &REE,int m)
 {
@@ -258,7 +269,7 @@ void Truck2RestC(struct TruckPropStru *Truck, struct RestAreaStru RestArea[],vec
     double legal = 0;                   // record legal driving time
     double loc1;                  //for calculation
     RegulationStru Reg = {8.0,11.0};     // USDOT HOS Regulation
-    
+
     if(Truck->DRbefore < Reg.MaxWS) {
         legal = min((Reg.MaxWS - Truck->DRbefore ), nor1(e));// nor1(e) is the first part driving time
         Truck->BP.push_back(Truck->StartT + legal);
@@ -394,10 +405,11 @@ int main() {
     vector<double> LDH = {};                 //Legal driving time
     vector<double> REE = {};                 //save leaving time (re-enter point for each truck after long rest)
     //initialization
+    double test=0;
 
     RestAreaStru RestArea[m];
 
-    ifstream infile_r("RestA_info.txt", ios::in);
+    ifstream infile_r("RestA_info.txt",ios::in);
     if(!infile_r)
     {
         cout << "Error: opening RestArea file fail" << endl;
@@ -436,7 +448,7 @@ int main() {
         infile_p >> POD[j].Etd >> POD[j].Exd >> POD[j].num;
         j++;
     }
-
+    //output check
     for( j = 0; j < et ; j++) {
         cout << "POD" << j << "\n";
         cout << POD[j].Etd <<"\t"<< POD[j].Exd <<"\t"<< POD[j].num<<endl;
@@ -545,7 +557,8 @@ int main() {
 
             Truck2RestS(&Truck, RestArea,REE,m);//function
 
-            cout<<"!!!!!!!!!!!!!SIZE"<<Truck.BP.size()<<endl;
+            cout<<"!!!!!!!!!!!!!SIZE "<<Truck.BP.size()<<endl;
+            cout<<"itr i = "<<i<<endl;
 
             for (unsigned it = 0; it < Truck.BP.size(); it++)
             {
