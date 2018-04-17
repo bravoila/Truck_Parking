@@ -12,5 +12,7 @@ method2.cpp, parctice.cpp and WangHeader.h is not in use right now.
 
 Build route:
 Apr 13 2018: consider re-enter the highway, going to seperate segment simulation and circular simulation. 
+Apr 18 2018: change input/output file type to .csv; 
+	     seperate segment simulation and circular simulation.
 
 test
