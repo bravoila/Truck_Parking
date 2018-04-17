@@ -258,8 +258,7 @@ void Truck2RestC(struct TruckPropStru *Truck, struct RestAreaStru RestArea[],vec
     double legal = 0;                   // record legal driving time
     double loc1;                  //for calculation
     RegulationStru Reg = {8.0,11.0};     // USDOT HOS Regulation
-
-
+    
     if(Truck->DRbefore < Reg.MaxWS) {
         legal = min((Reg.MaxWS - Truck->DRbefore ), nor1(e));// nor1(e) is the first part driving time
         Truck->BP.push_back(Truck->StartT + legal);
@@ -385,7 +384,7 @@ int main() {
     int l = 0;                               // Random Iterator
     int count = 0;                      // for the count, run times of truck
     double L = 1000.0;                       //Total simulation distance unit in mile
-    int n = 10000;                           //number of trucks to simulate entering from point 0
+    int n = 100;                           //number of trucks to simulate entering from point 0
                                              // WARNING: the code cannot run the simulation above 100,000.(total number)
     int tn = n;                              // total number of trucks to simulate
     int m = 20;                              // number of rest area
@@ -454,13 +453,13 @@ int main() {
 
     //consider for loop later
 
-    outFile.open("Truck.txt");
+    outFile.open("Truck.csv",ios::out);
     outFile << std::setprecision(2) << std::fixed; // keep two decimals
     //print title
-    outFile <<"Truck"<<std::right<<setw(7)<<"Num"<<std::right<<setw(10)<<"StartT"<<std::right<<setw(8)\
-            <<"BP1"<<std::right<<setw(13)<<"ShortRest"<<std::right<<setw(15)<<"FirstParking"<<std::right<<setw(8)\
-            <<"BP2"<<std::right<<setw(18)<<"SecondParking"<<std::right<<setw(10)<<"LongRest"<<std::right<<setw(8)\
-            <<"Entry"<<std::right<<setw(8)<<"Exit"<<"\n";
+    outFile <<"Truck Num"<<","<<"StartT"<<","\
+            <<"BP1"<<","<<"ShortRest"<<","<<"FirstParking"<<","\
+            <<"BP2"<<","<<"SecondParking"<<","<<"LongRest"<<","\
+            <<"Entry"<<","<<"Exit"<<"\n";
 
     TruckPropStru Truck;
 
@@ -480,7 +479,7 @@ int main() {
         Truck.Entryd = 0.1;
         Truck.Exitd = L;
         Truck.stu = DR;
-        outFile <<"Truck "<<std::right<<setw(5)<<i<<std::right<<setw(10)<< Truck.StartT <<std::right<<setw(10);
+        outFile <<i<<","<< Truck.StartT <<",";
         Truck2RestS(&Truck, RestArea,REE,m);//function
         cout<<"!!!!!!!!!!!!!SIZE"<<Truck.BP.size()<<endl;
 
@@ -504,10 +503,10 @@ int main() {
 
         for (unsigned it = 0; it < Truck.BP.size(); it++)
             {
-                outFile<<Truck.BP.at(it)<<std::right<<setw(12)<< Truck.RestTime.at(it)<<std::right<<setw(10)<<Truck.RN.at(it)<<std::right<<setw(15);
+                outFile<<Truck.BP.at(it)<<","<< Truck.RestTime.at(it)<<","<<Truck.RN.at(it)<<",";
             }
 
-            outFile<<Truck.Entryd<<std::right<<setw(10)<<Truck.Exitd<<endl;
+            outFile<<Truck.Entryd<<","<<Truck.Exitd<<endl;
 
         //clear and reset for next loop
         Truck.BP.clear();          //Time when driver decides to take rest
@@ -517,12 +516,14 @@ int main() {
         count = 0;
     }
 
+    outFile<<"Partial OD \n"<<endl;
 
     // partial OD
     for ( l = 0; l < et; l ++)
     {
         cout<<l<<endl;
         cout<<"================="<<endl;
+
 
         for ( i = n; i < n + POD[l].num; i++)
         {
@@ -540,7 +541,7 @@ int main() {
 
             Truck.stu = DR;
 
-            outFile <<"Truck "<<std::right<<setw(5)<<i<<std::right<<setw(10)<< Truck.StartT <<std::right<<setw(10);
+            outFile <<i<<","<< Truck.StartT <<",";
 
             Truck2RestS(&Truck, RestArea,REE,m);//function
 
@@ -548,10 +549,10 @@ int main() {
 
             for (unsigned it = 0; it < Truck.BP.size(); it++)
             {
-                outFile<<Truck.BP.at(it)<<std::right<<setw(12)<< Truck.RestTime.at(it)<<std::right<<setw(10)<<Truck.RN.at(it)<<std::right<<setw(15);
+                outFile<<Truck.BP.at(it)<<","<< Truck.RestTime.at(it)<<","<<Truck.RN.at(it)<<",";
             }
 
-            outFile<<Truck.Entryd<<std::right<<setw(10)<<Truck.Exitd<<endl;
+            outFile<<Truck.Entryd<<","<<Truck.Exitd<<endl;
 
             //clear and reset for next loop
             Truck.BP.clear();          //Time when driver decides to take rest
@@ -571,16 +572,16 @@ int main() {
     outFile.close();
 
     //output RestArea
-    outFile.open("RestArea.txt");
+    outFile.open("RestArea.csv");
     outFile << " Number of trucks in short rest \n" <<endl;
-    outFile << "RestArea"<<std::right<<setw(10)<<"Time"<<std::right<<setw(10)<<"Number of turcks"<<std::right<<setw(10)<<endl;
+    outFile << "RestArea"<<","<<"Time"<<","<<"Number of turcks"<<endl;
 
     for( j = 0; j < m ; j++)
     {
         outFile <<"Rest Area " << j<<"\n"<< endl;
         for ( t = 0; t < 24; t++)
         {
-            outFile <<std::right<<setw(20)<<t <<std::right<<setw(10)<< RestArea[j].Snum[t] << endl;
+            outFile <<","<<t <<","<< RestArea[j].Snum[t] << endl;
             //cout << t << " Number of trucks in long rest in rest area " << j << " is " << RestArea[j].Lnum[t] << endl;
         }
     }
