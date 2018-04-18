@@ -8,8 +8,12 @@
 #include <string>
 #include <iomanip>
 #include <algorithm>
+
 using namespace std;
+
 const double L = 1000.0;                       //Total simulation distance unit in mile
+const int MaxCy = 10;                          // max cycle number run in the simulation
+const int TT = 24*MaxCy*2;                     // total simulation time
 
 enum STATUS { DE, DR, SR, PR }; // DE is the default
 //Three modes: driving, searching for parking, parking
@@ -44,10 +48,10 @@ struct RestAreaStru
 {
     int id;             // Rest area's ID , stands for the distance from the observation point
     double location;    //rest area location
-    int Snum[24];       // number of trucks taking SHORT rest
+    int Snum[TT];       // number of trucks taking SHORT rest
                         // eg. Snum[3] store the number of trucks parked at RestArea from [3,4)
                         // if truck parks from 1.5 to 3.5, then Sunm[1],[2],[3] all plus 1.
-    int Lnum[24];       //number of trucks taking LONG rest
+    int Lnum[TT];       //number of trucks taking LONG rest
 
 };
 
@@ -104,10 +108,9 @@ double DistRR(int i,int j,struct RestAreaStru RestArea[])
     }
 }
 
-
 double DistER(double i,int j,struct RestAreaStru RestArea[])
 {
-        return RestArea[j].location - i;
+        return (RestArea[j].location - i);
 }
 
 /*################################  Truck2Rest Function   ##################################*/
@@ -120,7 +123,7 @@ double DistER(double i,int j,struct RestAreaStru RestArea[])
 // simulate circular of segment of highway?
 
 //function for segment of highway
-
+/*
 void Truck2RestS(struct TruckPropStru *Truck, struct RestAreaStru RestArea[],vector<double> &REE,int m)
 {
     default_random_engine e;                            // 定义一个随机数引擎
@@ -259,6 +262,8 @@ void Truck2RestS(struct TruckPropStru *Truck, struct RestAreaStru RestArea[],vec
     REE.push_back(Truck->BP.back() + Truck->RestTime.back());  //save leaving time (re-enter after long rest)###############################################
 
 }
+
+ */
 //CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 //Truck2RestC is used to simulate circular, start from one rest area to another.
 // function for circluar highway (loop)
@@ -266,8 +271,8 @@ void Truck2RestS(struct TruckPropStru *Truck, struct RestAreaStru RestArea[],vec
 void Truck2RestC(struct TruckPropStru *Truck, struct RestAreaStru RestArea[],vector<double> &REE,int m)
 {
     default_random_engine e;                            // 定义一个随机数引擎
-    normal_distribution<double> nor1(1,0.01);   //Normal distribution, use for driving time
-    normal_distribution<double> nor2(1,0.01);   //Normal distribution, use for driving time
+    normal_distribution<double> nor1(5,0.01);   //Normal distribution, use for driving time
+    normal_distribution<double> nor2(5,0.01);   //Normal distribution, use for driving time
 
     //https://homepage.divms.uiowa.edu/~mbognar/applets/normal.html
 
@@ -281,6 +286,7 @@ void Truck2RestC(struct TruckPropStru *Truck, struct RestAreaStru RestArea[],vec
     double loc1;                  //for calculation
     RegulationStru Reg = {8.0,11.0};     // USDOT HOS Regulation
 
+
     if(Truck->DRbefore < Reg.MaxWS) {
         legal = min((Reg.MaxWS - Truck->DRbefore ), nor1(e));// nor1(e) is the first part driving time
         Truck->BP.push_back(Truck->StartT + legal);
@@ -291,14 +297,13 @@ void Truck2RestC(struct TruckPropStru *Truck, struct RestAreaStru RestArea[],vec
         // find the parking for short rest
         cir = int(floor((Truck->speed * legal + Truck->Entryd) / L));
 
-        while (((Truck->speed * legal + Truck->Entryd) - cir*L)/DistER(Truck->Entryd,it,RestArea)==0)
+        while (int(floor((Truck->speed * legal + Truck->Entryd - cir*L)/DistER(Truck->Entryd,it,RestArea))) == 0)
         {
             it --;
         };
 
         a = it;
         cout << a << endl;
-
         //consider preference here or another function in the header file
         //the driver can park at the place he prefer in [0,a], choose the preferred RestArea
         //if the variance of the preference is below threshold, then choose the farest RestArea (a)
@@ -306,8 +311,8 @@ void Truck2RestC(struct TruckPropStru *Truck, struct RestAreaStru RestArea[],vec
         //similar to BP1
         //a is nearest RestArea
 
-        s1 = int(floor(Truck->BP.back()));//Time truck enters the RestArea[a], round down
-        s2 = int(ceil(Truck->BP.back() + Truck->RestTime.at(Truck->RestTime.size()-2)));//Time the truck leave the rest area, round up
+        s1 = int(floor(Truck->BP.back())) % 24;//Time truck enters the RestArea[a], round down
+        s2 = int(ceil(Truck->BP.back() + Truck->RestTime.at(Truck->RestTime.size()-2)))%24;//Time the truck leave the rest area, round up
         Truck->RN.push_back(PreferS(a));     //rest area for short rest
         Truck->BP.back() = Truck->StartT + (RestArea[a].location - Truck->Entryd + cir*L) / Truck->speed;
         // short rest time
@@ -328,15 +333,14 @@ void Truck2RestC(struct TruckPropStru *Truck, struct RestAreaStru RestArea[],vec
     }else{// when the truck only have long rest in the observed section
         legal = min((Reg.MaxWL - Truck->DRbefore ), nor1(e));// nor1(e) is the first part driving time
         Truck->BP.push_back(Truck->StartT);
-        Truck->RN.push_back(55);// code for only observing the second part
+        Truck->RN.push_back(0);// code for only observing the second part
         Truck->RestTime.at(Truck->RestTime.size()-2) = 0;
         Truck->BP.push_back(Truck->StartT + legal);
-        a = 55;// for continuing the following code
-        loc1 = Truck->Entryd;
+        a = 0;// for continuing the following code
 
     }
 
-    it = a % (m-1); //reset it value; if a < m -1 (19), then try from next rest area, which is a +1;
+    it = a % (m-1) + 1; //reset it value; if a < m -1 (19), then try from next rest area, which is a +1;
                     //else when a = m -1, try from the first rest area, which is 0
 
     while(int(floor(((Truck->BP.back() - Truck->BP.at(Truck->BP.size()-2)  - Truck->RestTime.at(Truck->RestTime.size()-2))* Truck->speed)/ DistRR(a,it,RestArea))) != 0)
@@ -354,8 +358,8 @@ void Truck2RestC(struct TruckPropStru *Truck, struct RestAreaStru RestArea[],vec
     Truck->BP.back() = Truck->BP.at(Truck->BP.size()-2) + Truck->RestTime.at(Truck->RestTime.size()-2)  + DistRR(a,b,RestArea) / Truck->speed;
     //Truck->RestLong = 4 + 12*u(e)+0.5;
 
-    s1 = int(floor(Truck->BP.back()));//Time truck enters the RestArea[b], round down
-    s2 = int(ceil(Truck->BP.back() + Truck->RestTime.back()));//Time truck leaves the RestArea[b]
+    s1 = int(floor(Truck->BP.back()))%24;//Time truck enters the RestArea[b], round down
+    s2 = int(ceil(Truck->BP.back() + Truck->RestTime.back()))%24;//Time truck leaves the RestArea[b]
 
     while((s1 < s2) || (s1 == s2) ) {
         RestArea[b].Lnum[s1] = RestArea[b].Lnum[s1] + 1;
@@ -374,10 +378,9 @@ int main() {
     //generate random numbers
     uniform_real_distribution<double> u(0, 1);          // 定义一个范围为0~1的浮点数分布类型
     default_random_engine e;                            // 定义一个随机数引擎
-    /*float a = 8*u(e);*/
     //std::normal_distribution<double> distribution(5.0,2.0);   //normal distribution
     lognormal_distribution<double> lgn1(2,0.5);  // Log-normal distribution,use for arrival
-    lognormal_distribution<double> lgn2(0.05,0.2);  // Log-normal distribution,use for short rest time
+    lognormal_distribution<double> lgn2(1,0.2);  // Log-normal distribution,use for short rest time
     //https://www.medcalc.org/manual/log-normal_distribution_functions.php
     poisson_distribution<int> pos(2.3);   //Poisson distribution
     //https://homepage.divms.uiowa.edu/~mbognar/applets/normal.html
@@ -387,7 +390,7 @@ int main() {
     int j = 0;                               // Iterate for RestArea combined with m
     int l = 0;                               // Random Iterator
     int count = 0;                      // for the count, run times of truck
-    int n = 100;                           //number of trucks to simulate entering from point 0
+    int n = 10;                           //number of trucks to simulate entering from point 0
                                              // WARNING: the code cannot run the simulation above 100,000.(total number)
     int tn = n;                              // total number of trucks to simulate
     int m = 20;                              // number of rest area
@@ -399,9 +402,9 @@ int main() {
     //initialization
     double test=0;
 
-    RestAreaStru RestArea[m];
+    RestAreaStru RestArea[m] = {0,0.0,{0},{0}};
 
-    ifstream infile_r("RestA_info.txt",ios::in);
+    ifstream infile_r("RestA_info2.txt",ios::in);
     if(!infile_r)
     {
         cout << "Error: opening RestArea file fail" << endl;
@@ -410,21 +413,24 @@ int main() {
     while(!infile_r.eof() && j < m)
     {
         infile_r >> RestArea[j].id >> RestArea[j].location;
-        for( i = 0 ; i< 24 ; i++)
-        {
-            infile_r >> RestArea[j].Snum[i] ;
-        }
-        for( i = 0 ; i< 24 ; i++)
-        {
-            infile_r >>  RestArea[j].Lnum[i];
-        }
+
+        //read previous rest truck
+//        for( i = 0 ; i< 24 ; i++)
+//        {
+//            infile_r >> RestArea[j].Snum[i] ;
+//        }
+//        for( i = 0 ; i< 24 ; i++)
+//        {
+//            infile_r >>  RestArea[j].Lnum[i];
+//        }
         j++;
 
     }
 
     infile_r.close();
 
-
+    //###################### POD ###############################
+/*  // POD is not needed in circular simulation
     // entrance{distance to point 0,number of trucks entering}
     struct EnterExitStru POD[et];
     // input partical OD info
@@ -454,15 +460,16 @@ int main() {
         cout<<"POD"<<l<<"\t"<<POD[l].num<<endl; //total number of trucks simulated ( including enter);
         tn = tn + POD[l].num; //total number of trucks simulated ( including enter);
     }
+    //###############################################
+*/
 
-    //consider for loop later
 
     outFile.open("Truck.csv",ios::out);
     outFile << std::setprecision(2) << std::fixed; // keep two decimals
     //print title
     outFile <<"Truck Num"<<","<<"StartT"<<","\
             <<"BP1"<<","<<"ShortRest"<<","<<"FirstParking"<<","\
-            <<"BP2"<<","<<"SecondParking"<<","<<"LongRest"<<","\
+            <<"BP2"<<","<<"LongRest"<<","<<"SecondParking"<<","\
             <<"Entry"<<","<<"Exit"<<"\n";
 
     TruckPropStru Truck;
@@ -480,14 +487,14 @@ int main() {
         // short and long rest time
         Truck.RestTime.push_back(lgn2(e));// rest time distribution truck leaves the RestArea[a], round up
         Truck.RestTime.push_back(1*u(e)+0.5);
-        Truck.Entryd = 0.1;
+        Truck.Entryd = 0.01;
         Truck.Exitd = L;
         Truck.stu = DR;
         outFile <<i<<","<< Truck.StartT <<",";
-        Truck2RestS(&Truck, RestArea,REE,m);//function
+        Truck2RestC(&Truck, RestArea,REE,m);//function
         cout<<"!!!!!!!!!!!!!SIZE"<<Truck.BP.size()<<endl;
 
-        while(count < 10 && REE.back() != 0 )
+        while(count < MaxCy && REE.back() != 0 )
         {
             //################################  Set distributions   ##################################
             Truck.DRbefore = 0 ;// restart after long rest
@@ -495,10 +502,10 @@ int main() {
             //in the future u(e) can be replaced by traffic flow function
             // short and long rest time
             Truck.RestTime.push_back(lgn2(e));// rest time distribution truck leaves the RestArea[a], round up
-            Truck.RestTime.push_back(1*u(e)+0.5);
+            Truck.RestTime.push_back(11*u(e)+0.5);
             Truck.Entryd = RestArea[Truck.RN.back()].location;
             Truck.Exitd = L; //loop
-            Truck2RestS(&Truck, RestArea,REE,m);//function
+            Truck2RestC(&Truck, RestArea,REE,m);//function
             cout<<"!!!!!!!!!!!!!SIZE"<<Truck.BP.size()<<endl;
             count ++;
             cout<<"i"<<i<<"count"<<count<<endl;
@@ -522,8 +529,8 @@ int main() {
 
     outFile<<"Partial OD \n"<<endl;
 
-    // partial OD
-    for ( l = 0; l < et; l ++)
+    // ######################### partial OD ########################################
+/*    for ( l = 0; l < et; l ++)
     {
         cout<<l<<endl;
         cout<<"================="<<endl;
@@ -569,7 +576,7 @@ int main() {
         cout<<"n = "<<n<<endl;
     }
     //##################################################################################################
-
+*/
     // re-entr after long rest
     // continue here
     // under construction
@@ -584,9 +591,13 @@ int main() {
     for( j = 0; j < m ; j++)
     {
         outFile <<"Rest Area " << j<<"\n"<< endl;
-        for ( t = 0; t < 24; t++)
+        for ( t = 0; t < TT; t++)
         {
-            outFile <<","<<t <<","<< RestArea[j].Snum[t] << endl;
+            outFile <<","<<t <<","<< RestArea[j].Snum[t] ;
+            if(t % 23 == 0){
+                outFile << endl;
+            }
+
             //cout << t << " Number of trucks in long rest in rest area " << j << " is " << RestArea[j].Lnum[t] << endl;
         }
     }
