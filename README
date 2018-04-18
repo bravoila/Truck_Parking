@@ -20,5 +20,8 @@ Apr 17 2018: change output file type to .csv;
 		consider changing array to vector.
 Apr 18 2018: Seperate circular simulation code, need to figure out random figure problem.
 	     Needs to split the file to header and cpp file.
+	     Consider re-entry from rest area after long rest by circular simulation.
+	     RestA_info2.txt only contains the id and location info of rest area.
+	     
 
 test
