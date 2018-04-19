@@ -13,7 +13,7 @@ using namespace std;
 
 const double L = 1000.0;                       //Total simulation distance unit in mile
 const int MaxCy = 10;                          // max cycle number run in the simulation
-const int TT = 24*MaxCy*2;                     // total simulation time
+const int TT = MaxCy*20;                     // total simulation time
 
 enum STATUS { DE, DR, SR, PR }; // DE is the default
 //Three modes: driving, searching for parking, parking
@@ -311,8 +311,8 @@ void Truck2RestC(struct TruckPropStru *Truck, struct RestAreaStru RestArea[],vec
         //similar to BP1
         //a is nearest RestArea
 
-        s1 = int(floor(Truck->BP.back())) % 24;//Time truck enters the RestArea[a], round down
-        s2 = int(ceil(Truck->BP.back() + Truck->RestTime.at(Truck->RestTime.size()-2)))%24;//Time the truck leave the rest area, round up
+        s1 = int(floor(Truck->BP.back())) ;//Time truck enters the RestArea[a], round down
+        s2 = int(ceil(Truck->BP.back() + Truck->RestTime.at(Truck->RestTime.size()-2)));//Time the truck leave the rest area, round up
         Truck->RN.push_back(PreferS(a));     //rest area for short rest
         Truck->BP.back() = Truck->StartT + (RestArea[a].location - Truck->Entryd + cir*L) / Truck->speed;
         // short rest time
@@ -358,8 +358,8 @@ void Truck2RestC(struct TruckPropStru *Truck, struct RestAreaStru RestArea[],vec
     Truck->BP.back() = Truck->BP.at(Truck->BP.size()-2) + Truck->RestTime.at(Truck->RestTime.size()-2)  + DistRR(a,b,RestArea) / Truck->speed;
     //Truck->RestLong = 4 + 12*u(e)+0.5;
 
-    s1 = int(floor(Truck->BP.back()))%24;//Time truck enters the RestArea[b], round down
-    s2 = int(ceil(Truck->BP.back() + Truck->RestTime.back()))%24;//Time truck leaves the RestArea[b]
+    s1 = int(floor(Truck->BP.back()));//Time truck enters the RestArea[b], round down
+    s2 = int(ceil(Truck->BP.back() + Truck->RestTime.back()));//Time truck leaves the RestArea[b]
 
     while((s1 < s2) || (s1 == s2) ) {
         RestArea[b].Lnum[s1] = RestArea[b].Lnum[s1] + 1;
@@ -390,7 +390,7 @@ int main() {
     int j = 0;                               // Iterate for RestArea combined with m
     int l = 0;                               // Random Iterator
     int count = 0;                      // for the count, run times of truck
-    int n = 10;                           //number of trucks to simulate entering from point 0
+    int n = 100;                           //number of trucks to simulate entering from point 0
                                              // WARNING: the code cannot run the simulation above 100,000.(total number)
     int tn = n;                              // total number of trucks to simulate
     int m = 20;                              // number of rest area
@@ -586,20 +586,42 @@ int main() {
     //output RestArea
     outFile.open("RestArea.csv");
     outFile << " Number of trucks in short rest \n" <<endl;
-    outFile << "RestArea"<<","<<"Time"<<","<<"Number of turcks"<<endl;
+    outFile << "RestArea"<<","<<"Time"<<","<<"Number of trucks"<<endl;
 
     for( j = 0; j < m ; j++)
     {
-        outFile <<"Rest Area " << j<<"\n"<< endl;
-        for ( t = 0; t < TT; t++)
+        outFile <<"RestArea"<< j<<"\n";
+        outFile<<"Time ";
+        for ( t = 0; t <TT; t++)
         {
-            outFile <<","<<t <<","<< RestArea[j].Snum[t] ;
-            if(t % 23 == 0){
-                outFile << endl;
+            outFile <<t<<"," ;
+            if(t % 24 == 0 && t !=0){
+                outFile << " day "<< int(floor(t/24))<<",";
             }
-
             //cout << t << " Number of trucks in long rest in rest area " << j << " is " << RestArea[j].Lnum[t] << endl;
         }
+        outFile <<endl;
+        outFile<<"Snum ";
+        for ( t = 0; t <TT; t++)
+        {
+            outFile <<RestArea[j].Snum[t]<<"," ;
+            if(t % 24 == 0 && t !=0){
+                outFile << " day "<< int(floor(t/24))<<",";
+            }
+            //cout << t << " Number of trucks in long rest in rest area " << j << " is " << RestArea[j].Lnum[t] << endl;
+        }
+        outFile <<endl;
+
+        outFile<<"Lnum ";
+        for ( t = 0; t <TT; t++)
+        {
+            outFile <<RestArea[j].Lnum[t]<<"," ;
+            if(t % 24 == 0 && t !=0){
+                outFile << " day "<< int(floor(t/24))<<",";
+            }
+            //cout << t << " Number of trucks in long rest in rest area " << j << " is " << RestArea[j].Lnum[t] << endl;
+        }
+        outFile <<endl;
     }
     outFile.close();
     return 0;
