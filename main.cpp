@@ -14,8 +14,8 @@ default_random_engine e(time(NULL));                            // 定义一个�
 uniform_real_distribution<double> u(0, 1);
 
 const double L = 1000.0;                       //Total simulation distance unit in mile
-const int MaxCy = 10;                          // max cycle number run in the simulation
-const int TT = MaxCy*24;                     // total simulation time
+const int MaxCy = 100;                          // max cycle number run in the simulation
+const int TT = MaxCy*24;                     // total simulation time, 16 = L/v
 
 enum STATUS { DE, DR, SR, PR }; // DE is the default
 //Three modes: driving, searching for parking, parking
@@ -138,7 +138,6 @@ double DrivingTime(double a)
 
 double Arrival() {//custom arrival distribution
         //plot https://www.desmos.com/calculator/7kmkfmqtgp
-
         int xmin = 0;
         int xmax = 24;
         double x = (xmax - xmin) * u(e) + xmin;
@@ -325,7 +324,7 @@ void Truck2RestC(struct TruckPropStru *Truck, struct RestAreaStru RestArea[],vec
     normal_distribution<double> nor2(2.5,5);   //Normal distribution, use for second driving time
 
     //https://homepage.divms.uiowa.edu/~mbognar/applets/normal.html
-
+    m = 20;
     int it = m - 1;                  //iterator
     int a = 0;                       // store the RestArea number of SHORT rest
     int b = 0;                       // store the RestArea number of LONG rest
@@ -335,7 +334,11 @@ void Truck2RestC(struct TruckPropStru *Truck, struct RestAreaStru RestArea[],vec
     double legal = 0;                   // record legal driving time
     RegulationStru Reg = {8.0,11.0};     // USDOT HOS Regulation
 
+    cout<<"m1 = "<<m<<endl;
+
+
     if(Truck->DRbefore < Reg.MaxWS) {
+
 
         legal = min((Reg.MaxWS - Truck->DRbefore ), DrivingTime(nor1(e)));// nor1(e) is the first part driving time
         Truck->BP.push_back(Truck->StartT + legal);
@@ -345,6 +348,7 @@ void Truck2RestC(struct TruckPropStru *Truck, struct RestAreaStru RestArea[],vec
         // find the parking for short rest
         cir = int(floor((Truck->speed * legal) / L));
 
+
         while ((Truck->speed * legal - cir*L) < DistER(Truck->Entryd,it,RestArea))
         {
             it --;
@@ -352,6 +356,7 @@ void Truck2RestC(struct TruckPropStru *Truck, struct RestAreaStru RestArea[],vec
 
         a = it;
         cout << "a = "<<a << endl;
+        cout<<"m2 = "<<m<<endl;
 
         //consider preference here or another function in the header file
         //the driver can park at the place he prefer in [0,a], choose the preferred RestArea
@@ -387,6 +392,7 @@ void Truck2RestC(struct TruckPropStru *Truck, struct RestAreaStru RestArea[],vec
         a = 0;// for continuing the following code
     }
 
+    cout<<"m3 = "<<m<<endl;
     it = (a + 1) % m ; //reset it value; if a < m -1 (19), then try from next rest area, which is a +1;
                            //else when a = m -1, try from the first rest area, which is 0
 
@@ -407,6 +413,7 @@ void Truck2RestC(struct TruckPropStru *Truck, struct RestAreaStru RestArea[],vec
     }
 
     cout<<"b = "<<b<<endl;
+    cout<<"m4 = "<<m<<endl;
     // when outside the segment
 
     Truck->RN.push_back(PreferL(a,b));
@@ -534,7 +541,8 @@ int main() {
     for ( i = 0 ; i < n; i++)
     {
         //initialization
-        Truck.speed = 60;  //assume speed is 60 mph
+        m = 20;
+        Truck.speed = 65;  //assume speed is 65 mph
         //################################  Set distributions   ##################################
         Truck.DRbefore = 11*u(e) ;// Driving time before entering the highway
         Truck.StartT = Arrival(); //Arrival function at entrance
@@ -561,7 +569,9 @@ int main() {
             Truck.RestTime.push_back(11*u(e)+0.5);
             Truck.Entryd = RestArea[Truck.RN.back()].location;
             Truck.Exitd = L; //loop
+            cout<<"m5 = "<<m<<endl;
             Truck2RestC(&Truck, RestArea,REE,m);//function
+            cout<<"m6 = "<<m<<endl;
             cout<<"!!!!!!!!!!!!!SIZE"<<Truck.BP.size()<<endl;
             count ++;
             cout<<"i"<<i<<"count"<<count<<endl;
