@@ -13,8 +13,8 @@ using namespace std;
 default_random_engine e(time(NULL));                            // 定义一个随机数引擎
 uniform_real_distribution<double> u(0, 1);
 
-const double L = 1000.0;                       //Total simulation distance unit in mile
-const int MaxCy = 100;                          // max cycle number run in the simulation
+const double L = 100.0;                       //Total simulation distance unit in mile
+const int MaxCy = 10;                          // max cycle number run in the simulation
 const int TT = MaxCy*24;                     // total simulation time, 16 = L/v
 
 enum STATUS { DE, DR, SR, PR }; // DE is the default
@@ -41,8 +41,8 @@ struct TruckPropStru
     //then re-enter and multi resting is possible
     // end condition: truck driving out of observing segment
     //
-    double Entryd;              //entry distance (distance to point 0) default value =0
-    double Exitd;              //exit distance (distance to point 0) default value =L
+    vector<double> Entryd;              //entry distance (distance to point 0) default value =0
+    vector<double> Exitd;              //exit distance (distance to point 0) default value =L
     STATUS stu;
 };
 
@@ -317,11 +317,11 @@ void Truck2RestS(struct TruckPropStru *Truck, struct RestAreaStru RestArea[],vec
 // from rest area to rest area
 void Truck2RestC(struct TruckPropStru *Truck, struct RestAreaStru RestArea[],vector<double> &REE,int m)
 {
-    default_random_engine e(time(NULL));                            // 定义一个随机数引擎
+    default_random_engine e;                            // 定义一个随机数引擎
     lognormal_distribution<double> lgn1(1.5,1.5);
     lognormal_distribution<double> lgn2(2,0.5);
-    normal_distribution<double> nor1(7.5,5);   //Normal distribution, use for first driving time
-    normal_distribution<double> nor2(2.5,5);   //Normal distribution, use for second driving time
+    normal_distribution<double> nor1(7.5,15);   //Normal distribution, use for first driving time
+    normal_distribution<double> nor2(2.5,15);   //Normal distribution, use for second driving time
 
     //https://homepage.divms.uiowa.edu/~mbognar/applets/normal.html
     m = 20;
@@ -331,6 +331,7 @@ void Truck2RestC(struct TruckPropStru *Truck, struct RestAreaStru RestArea[],vec
     int s1 = 0;                      // store the entering time of SHORT and LONG rest
     int s2 = 0;                      // store the leaving time number of SHORT LONG rest, in 1 hour interval
     int cir = 0;                        // number of loop the truck drive
+    double rem = 0;                     // remaining distance after deduction circle
     double legal = 0;                   // record legal driving time
     RegulationStru Reg = {8.0,11.0};     // USDOT HOS Regulation
 
@@ -338,8 +339,6 @@ void Truck2RestC(struct TruckPropStru *Truck, struct RestAreaStru RestArea[],vec
 
 
     if(Truck->DRbefore < Reg.MaxWS) {
-
-
         legal = min((Reg.MaxWS - Truck->DRbefore ), DrivingTime(nor1(e)));// nor1(e) is the first part driving time
         Truck->BP.push_back(Truck->StartT + legal);
         // allocate the rest area to decide the truck BP1
@@ -348,8 +347,7 @@ void Truck2RestC(struct TruckPropStru *Truck, struct RestAreaStru RestArea[],vec
         // find the parking for short rest
         cir = int(floor((Truck->speed * legal) / L));
 
-
-        while ((Truck->speed * legal - cir*L) < DistER(Truck->Entryd,it,RestArea))
+        while ((Truck->speed * legal - cir*L) < DistER(Truck->Entryd.back(),it,RestArea))
         {
             it --;
         };
@@ -366,7 +364,7 @@ void Truck2RestC(struct TruckPropStru *Truck, struct RestAreaStru RestArea[],vec
         //a is nearest RestArea
 
         Truck->RN.push_back(PreferS(a));     //rest area for short rest
-        Truck->BP.back() = Truck->StartT + (DistER(Truck->Entryd,a,RestArea)+ cir*L) / Truck->speed;
+        Truck->BP.back() = Truck->StartT + (DistER(Truck->Entryd.back(),a,RestArea)+ cir*L) / Truck->speed;
         // short rest time
         //Truck->RestShort = lgn2(e); rest time distribution truck leaves the RestArea[a], round up
         s1 = int(floor(Truck->BP.back())) ;//Time truck enters the RestArea[a], round down
@@ -392,16 +390,20 @@ void Truck2RestC(struct TruckPropStru *Truck, struct RestAreaStru RestArea[],vec
         a = 0;// for continuing the following code
     }
 
-    cout<<"m3 = "<<m<<endl;
     it = (a + 1) % m ; //reset it value; if a < m -1 (19), then try from next rest area, which is a +1;
                            //else when a = m -1, try from the first rest area, which is 0
 
 //WARNING!! what if DistRR(a,it,RestArea))= 0?????????
     cir = int(floor((Truck->BP.back() - Truck->BP.at(Truck->BP.size()-2)  - Truck->RestTime.at(Truck->RestTime.size()-2))* Truck->speed)  / L);
-
-    while(((Truck->BP.back() - Truck->BP.at(Truck->BP.size()-2)  - Truck->RestTime.at(Truck->RestTime.size()-2))* Truck->speed - cir*L) > DistRR(a,it,RestArea))
+    rem = ((Truck->BP.back() - Truck->BP.at(Truck->BP.size()-2)  - Truck->RestTime.at(Truck->RestTime.size()-2))* Truck->speed - cir*L);
+    //change here tomorrow, to lower and upper limit
+    if(rem > 94.9){// this is the max distance = !=L
+        rem = 94.8;
+    }
+    while(rem > DistRR(a,it,RestArea))
     {//test whether the truck has left the segme
         it = (it + 1) % m ;
+        cout<<rem<<" " <<DistRR(a,it,RestArea)<<endl;
     }
 
     if(it == 0){
@@ -413,7 +415,6 @@ void Truck2RestC(struct TruckPropStru *Truck, struct RestAreaStru RestArea[],vec
     }
 
     cout<<"b = "<<b<<endl;
-    cout<<"m4 = "<<m<<endl;
     // when outside the segment
 
     Truck->RN.push_back(PreferL(a,b));
@@ -440,10 +441,8 @@ int main() {
     ofstream outFile;
     //generate random numbers
     uniform_real_distribution<double> u(0, 1);          // 定义一个范围为0~1的浮点数分布类型
-    default_random_engine e(time(NULL));                            // 定义一个随机数引擎
+    default_random_engine e;                            // 定义一个随机数引擎
     //std::normal_distribution<double> distribution(5.0,2.0);   //normal distribution
-    normal_distribution<double> nora1(7,1);  // Log-normal distribution,use for arrival
-    normal_distribution<double> nora2(8,3);  // Log-normal distribution,use for arrival
     lognormal_distribution<double> lgn2(1,0.2);  // Log-normal distribution,use for short rest time
     //https://www.medcalc.org/manual/log-normal_distribution_functions.php
     poisson_distribution<int> pos(2.3);   //Poisson distribution
@@ -468,7 +467,7 @@ int main() {
 
     RestAreaStru RestArea[m] = {0,0.0,{0},{0}};
 
-    ifstream infile_r("RestA_info2.txt",ios::in);
+    ifstream infile_r("RestA_info3.txt",ios::in);
     if(!infile_r)
     {
         cout << "Error: opening RestArea file fail" << endl;
@@ -530,7 +529,7 @@ int main() {
     outFile.open("Truck.csv",ios::out);
     outFile << std::setprecision(2) << std::fixed; // keep two decimals
     //print title
-    outFile <<"Truck Num"<<","<<"StartT"<<","\
+    outFile <<"TruckNum"<<","<<"StartT"<<","\
             <<"BP1"<<","<<"ShortRest"<<","<<"FirstParking"<<","\
             <<"BP2"<<","<<"LongRest"<<","<<"SecondParking"<<","\
             <<"Entry"<<","<<"Exit"<<"\n";
@@ -550,11 +549,11 @@ int main() {
         // short and long rest time
         Truck.RestTime.push_back(lgn2(e));// rest time distribution truck leaves the RestArea[a], round up
         Truck.RestTime.push_back(11*u(e)+0.5);
-        Truck.Entryd = 0.1;
-        Truck.Exitd = L;
+        Truck.Entryd.push_back(0.1);
         Truck.stu = DR;
         outFile <<i<<","<< Truck.StartT <<",";
         Truck2RestC(&Truck, RestArea,REE,m);//function
+        Truck.Exitd.push_back(RestArea[Truck.RN.back()].location);
         cout<<"!!!!!!!!!!!!!SIZE"<<Truck.BP.size()<<endl;
 
 
@@ -567,10 +566,10 @@ int main() {
             // short and long rest time
             Truck.RestTime.push_back(lgn2(e));// rest time distribution truck leaves the RestArea[a], round up
             Truck.RestTime.push_back(11*u(e)+0.5);
-            Truck.Entryd = RestArea[Truck.RN.back()].location;
-            Truck.Exitd = L; //loop
+            Truck.Entryd.push_back(RestArea[Truck.RN.back()].location);
             cout<<"m5 = "<<m<<endl;
             Truck2RestC(&Truck, RestArea,REE,m);//function
+            Truck.Exitd.push_back(RestArea[Truck.RN.back()].location);
             cout<<"m6 = "<<m<<endl;
             cout<<"!!!!!!!!!!!!!SIZE"<<Truck.BP.size()<<endl;
             count ++;
@@ -581,14 +580,19 @@ int main() {
         for (unsigned it = 0; it < Truck.BP.size(); it++)
             {
                 outFile<<Truck.BP.at(it)<<","<< Truck.RestTime.at(it)<<","<<Truck.RN.at(it)<<",";
+                       if(it %2 == 1) {
+                           outFile << Truck.Entryd.at((it-1)/2) << "," << Truck.Exitd.at((it-1)/2)<<",";
+                       }
             }
 
-            outFile<<Truck.Entryd<<","<<Truck.Exitd<<endl;
+            outFile<<endl;
 
         //clear and reset for next loop
         Truck.BP.clear();          //Time when driver decides to take rest
         Truck.RN.clear();             // Rest area number for trucker's rest
         Truck.RestTime.clear();    // Duration of break
+        Truck.Entryd.clear();
+        Truck.Exitd.clear();
         REE.clear();
         count = 0;
     }
