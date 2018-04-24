@@ -160,157 +160,6 @@ double Arrival() {//custom arrival distribution
         }
     }
 
-/*################################  Truck2Rest Function   ##################################*/
-
-// The function works for 24 hour
-
-// To do:
-// add capacity consideration, violation,etc
-// add perference of rest area
-// simulate circular of segment of highway?
-
-//function for segment of highway
-/*
-void Truck2RestS(struct TruckPropStru *Truck, struct RestAreaStru RestArea[],vector<double> &REE,int m)
-{
-    default_random_engine e;                            // 定义一个随机数引擎
-    normal_distribution<double> nor1(6,0.7);   //Normal distribution, use for driving time
-    normal_distribution<double> nor2(3,0.7);   //Normal distribution, use for driving time
-
-    //https://homepage.divms.uiowa.edu/~mbognar/applets/normal.html
-
-    int it = m - 1;                  //iterator
-    int a = 0;                       // store the RestArea number of SHORT rest
-    int b = 0;                       // store the RestArea number of LONG rest
-    int s1 = 0;                      // store the entering time of SHORT and LONG rest
-    int s2 = 0;                      // store the leaving time number of SHORT LONG rest, in 1 hour interval
-    double legal = 0;                   // record legal driving time
-    double loc1;                  //for calculation
-    RegulationStru Reg = {8.0,11.0};     // USDOT HOS Regulation
-
-    cout<<"it begin"<<it<<endl;
-    cout<<"Truck Exitd"<<Truck->Exitd<<endl;
-
-    //find the nearest rest area before location of exit, determine the range
-    while((floor((Truck->Exitd)/ RestArea[it].location)) == 0)
-    {
-        it = it -1;
-        cout<<"it in "<<it <<endl;
-    }
-
-    m = it;// reset m value for b calculation
-    cout<<"it "<<it<<endl;
-
-    if(Truck->DRbefore < Reg.MaxWS) {
-        legal = min((Reg.MaxWS - Truck->DRbefore ), nor1(e));// nor1(e) is the first part driving time
-        Truck->BP.push_back(Truck->StartT + legal);
-        // allocate the rest area to decide the truck BP1
-        // truck cannot park randomly, a is actually the last RestArea number
-        // the driver can park in order to obey HOS
-
-        // find the parking for short rest
-        while (int(floor((Truck->speed * legal + Truck->Entryd) / RestArea[it].location)) == 0) {
-            it--;
-        }
-
-        a = it;
-        cout << a << endl;
-
-        if (a == m - 1 || a < 0 || RestArea[a].location < Truck->Entryd || RestArea[a].location == Truck->Entryd) {
-            cout << "q" << endl;
-            Truck->RN.push_back(66);//error code for outside the highway section for the first part
-            REE.push_back(0);
-            return;
-            // if the truck is beyond the observed segment (a = m-1)
-            // or before the entry point(RestArea[a].location < eti||RestArea[a].location == eti),
-            // or the truck cannot even reach the nearset rest area( a= -1\ a <0), then quit the function
-        }
-
-        //consider preference here or another function in the header file
-        //the driver can park at the place he prefer in [0,a], choose the preferred RestArea
-        //if the variance of the preference is below threshold, then choose the farest RestArea (a)
-        //update BP1 value
-        //similar to BP1
-        //a is nearest RestArea
-
-
-        s1 = int(floor(Truck->BP.back()));//Time truck enters the RestArea[a], round down
-        s2 = int(ceil(Truck->BP.back() + Truck->RestTime.at(Truck->RestTime.size()-2)));//Time the truck leave the rest area, round up
-        if (s1 > 24 || s2 > 24) {
-            Truck->RN.push_back(77);
-            REE.push_back(0);
-            return;
-        }
-
-        Truck->RN.push_back(PreferS(a));     //rest area for short rest
-        Truck->BP.back() = Truck->StartT + (RestArea[a].location - Truck->Entryd) / Truck->speed;
-        // short rest time
-        //Truck->RestShort = lgn2(e); rest time distribution truck leaves the RestArea[a], round up
-
-        //number of short term parking statistics
-        while ((s1 < s2) || (s1 == s2)) {
-            RestArea[a].Snum[s1] = RestArea[a].Snum[s1] + 1;
-            s1++;
-        }
-
-        //for next rest part(long rest) ####################
-        Truck->BP.push_back(Truck->BP.back() + Truck->RestTime.at(Truck->RestTime.size()-2) + min((Reg.MaxWL - Truck->BP.back() + Truck->StartT ), nor2(e)));
-        // the latter is the same as driving time function in the first part
-        // truck driver driving time can be less than the regulation
-        loc1 = RestArea[a].location;
-
-    }else{// when the truck only have long rest in the observed section
-        legal = min((Reg.MaxWL - Truck->DRbefore ), nor1(e));// nor1(e) is the first part driving time
-        Truck->BP.push_back(Truck->StartT);
-        Truck->RN.push_back(55);// code for only observing the second part
-        Truck->RestTime.at(Truck->RestTime.size()-2) = 0;
-        Truck->BP.push_back(Truck->StartT + legal);
-        a = 55;// for continuing the following code
-        loc1 = Truck->Entryd;
-    }
-
-    it = m ; //reset it value
-    while(int(floor((loc1 + (Truck->BP.back() - Truck->BP.at(Truck->BP.size()-2)  - Truck->RestTime.at(Truck->RestTime.size()-2))* Truck->speed)/ RestArea[it].location)) == 0)
-    {//test whether the truck has left the segment
-        it--;
-    }
-    b = it;
-    cout<<b<<endl;
-    // when outside the segment
-    if(b == m-1 || b == a || RestArea[b].location < Truck->Entryd)
-    {
-        Truck->RN.push_back(88);// code for outside the highway section for the second part
-        cout<<"qq"<<endl;
-        REE.push_back(0);
-        return;
-        // if the truck is beyond the observed segment (b = m-1)
-        // or the truck cannot even reach the nearset rest area( b == a), then quit the function
-    }
-    Truck->RN.push_back(PreferL(a,b));
-    Truck->BP.back() = Truck->BP.at(Truck->BP.size()-2) + Truck->RestTime.at(Truck->RestTime.size()-2)  + (RestArea[b].location - RestArea[a].location )/ Truck->speed;
-    //Truck->RestLong = 4 + 12*u(e)+0.5;
-
-    s1 = int(floor(Truck->BP.back()));//Time truck enters the RestArea[b], round down
-    s2 = int(ceil(Truck->BP.back() + Truck->RestTime.back()));//Time truck leaves the RestArea[b]
-    if(s1 > 24|| s2 > 24)
-    {
-        Truck->RN.push_back(99);//code for truck leave the segment
-        REE.push_back(0);
-        return;
-    }
-
-    while((s1 < s2) || (s1 == s2) ) {
-        RestArea[b].Lnum[s1] = RestArea[b].Lnum[s1] + 1;
-        s1 ++;
-    }
-
-
-
-    REE.push_back(Truck->BP.back() + Truck->RestTime.back());  //save leaving time (re-enter after long rest)###############################################
-
-}
-
- */
 //CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 //Truck2RestC is used to simulate circular, start from one rest area to another.
 // function for circluar highway (loop)
@@ -439,21 +288,18 @@ void Truck2RestS(struct TruckPropStru *Truck, struct RestAreaStru RestArea[],vec
     cout<<"prefer"<<PreferL(a,b)<<endl;
 
     Truck->BP.back() = Truck->BP.at(Truck->BP.size()-2) + Truck->RestTime.at(Truck->RestTime.size()-2)  + DistRR(a,b,RestArea) / Truck->speed;
-    //Truck->RestLong = 4 + 12*u(e)+0.5;
 
     s1 = int(floor(Truck->BP.back()));//Time truck enters the RestArea[b], round down
     s2 = int(ceil(Truck->BP.back() + Truck->RestTime.back()));//Time truck leaves the RestArea[b]
-
     while((s1 < s2) || (s1 == s2) ) {
         RestArea[b].Lnum[s1] = RestArea[b].Lnum[s1] + 1;
         s1 ++;
         //consider change Lnum to vector;!!!!!!!!!!!!!!!!1
     }
 
-    REE.push_back(Truck->BP.back() + Truck->RestTime.back());  //save leaving time (re-enter after long rest)###############################################
-
+    REE.push_back(Truck->BP.back() + Truck->RestTime.back());
+    //save leaving time (re-enter after long rest)###############################################
 }
-
 
 /*################################  Main Function   ##################################*/
 int main() {
@@ -641,10 +487,6 @@ int main() {
         cout<<"n = "<<n<<endl;
     }
     //##################################################################################################
-
-    // re-entr after long rest
-    // continue here
-    // under construction
 
     outFile.close();
 

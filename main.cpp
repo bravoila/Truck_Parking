@@ -423,7 +423,6 @@ void Truck2RestC(struct TruckPropStru *Truck, struct RestAreaStru RestArea[],vec
     Truck->RN.push_back(PreferL(a,b));
     cout<<"prefer"<<PreferL(a,b)<<endl;
 
-
     Truck->BP.back() = Truck->BP.at(Truck->BP.size()-2) + Truck->RestTime.at(Truck->RestTime.size()-2)  + DistRR(a,b,RestArea) / Truck->speed;
     //Truck->RestLong = 4 + 12*u(e)+0.5;
 
@@ -437,7 +436,6 @@ void Truck2RestC(struct TruckPropStru *Truck, struct RestAreaStru RestArea[],vec
     }
 
     REE.push_back(Truck->BP.back() + Truck->RestTime.back());  //save leaving time (re-enter after long rest)###############################################
-
 }
 
 
@@ -459,7 +457,6 @@ int main() {
     int l = 0;                               // Random Iterator
     int count = 0;                      // for the count, run times of truck
     int n = 10000;                           //number of trucks to simulate entering from point 0
-                                             // WARNING: the code cannot run the simulation above 100,000.(total number)
     int tn = n;                              // total number of trucks to simulate
     int m = 20;                              // number of rest area
     int et = 21;                             // total number of combination of entrance and exit
@@ -585,7 +582,6 @@ int main() {
                            outFile << Truck.Entryd.at((it-1)/2) << "," << Truck.Exitd.at((it-1)/2)<<",";
                        }
             }
-
             outFile<<endl;
 
         //clear and reset for next loop
@@ -597,7 +593,6 @@ int main() {
         REE.clear();
         count = 0;
     }
-
     outFile<<"Partial OD \n"<<endl;
 
     // ######################### partial OD ########################################
@@ -652,7 +647,6 @@ int main() {
     // under construction
 
     outFile.close();
-
     //output RestArea
     outFile.open("RestArea.csv");
     outFile << " Number of trucks in short rest \n" <<endl;
