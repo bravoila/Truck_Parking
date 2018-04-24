@@ -4,7 +4,7 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_CXX
-  "/home/bravoila/CLionProjects/testforinput/main.cpp" "/home/bravoila/CLionProjects/testforinput/cmake-build-debug/CMakeFiles/testforinput.dir/main.cpp.o"
+  "/home/bravoila/CLionProjects/Truck_Parking/testforinput/main.cpp" "/home/bravoila/CLionProjects/Truck_Parking/testforinput/cmake-build-debug/CMakeFiles/testforinput.dir/main.cpp.o"
   )
 set(CMAKE_CXX_COMPILER_ID "GNU")
 

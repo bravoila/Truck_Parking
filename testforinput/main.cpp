@@ -8,10 +8,13 @@
 #include <ctime>
 #include <random>
 #include <cmath>
-#include <fstream>
 #include <string>
 #include <iomanip>
 #include <algorithm>
+
+#include <sstream>
+#include <string>
+
 
 using namespace std;
 
@@ -27,6 +30,14 @@ struct RestAreaStru
     int Lnum[24];       //number of trucks taking LONG rest
 
 };
+
+string Trim(string& str)
+{
+    //str.find_first_not_of(" \t\r\n"),在字符串str中从索引0开始，返回首次不匹配"\t\r\n"的位置
+    str.erase(0,str.find_first_not_of(" \t\r\n"));
+    str.erase(str.find_last_not_of(" \t\r\n") + 1);
+    return str;
+}
 
 
 int main() {
@@ -81,6 +92,70 @@ int main() {
 
     */
 
+// 写文件
+    //ofstream outFile;
+    //outFile.open("data.csv", ios::out); // 打开模式可省略
+    //outFile << "name" << ',' << "age" << ',' << "hobby" << endl;
+    //outFile << "Mike" << ',' << 18 << ',' << "paiting" << endl;
+    //outFile << "Tom" << ',' << 25 << ',' << "football" << endl;
+    //outFile << "Jack" << ',' << 21 << ',' << "music" << endl;
+    //outFile.close();
+
+    // 读文件
+
+    //删除字符串中空格，制表符tab等无效字符
+    ifstream inFile("RestA_info2.txt"); //打开文件流操作
+    string line;
+    string linkURL;
+
+    if (inFile.is_open())
+    {
+        while (getline(inFile, line))   //整行读取，换行符“\n”区分，遇到文件尾标志eof终止读取
+        {
+            linkURL = line.substr(0,line.find(',',0));
+            cout <<"原始字符串："<< linkURL << endl; //整行输出
+            /* istringstream sin(line); //将整行字符串line读入到字符串流istringstream中
+             vector<string> fields; //声明一个字符串向量
+             string field;
+             while (getline(sin, field, ',')) //将字符串流sin中的字符读入到field字符串中，以逗号为分隔符
+             {
+                 fields.push_back(field); //将刚刚读取的字符串添加到向量fields中
+             }
+             string name = Trim(fields[0]); //清除掉向量fields中第一个元素的无效字符，并赋值给变量name
+             string age = Trim(fields[1]); //清除掉向量fields中第二个元素的无效字符，并赋值给变量age
+             string birthday = Trim(fields[2]); //清除掉向量fields中第三个元素的无效字符，并赋值给变量birthday
+             cout <<"处理之后的字符串："<< name << "\t" << age << "\t" << birthday << endl;*/
+        }
+    }
+
+
+/*
+    while(!infile_r.eof() && j < m)
+    {
+        infile_r >> RestArea[j].id >> RestArea[j].location;
+        for( i = 0 ; i< 24 ; i++)
+        {
+            infile_r >> RestArea[j].Snum[i] ;
+        }
+        for( i = 0 ; i< 24 ; i++)
+        {
+            infile_r >>  RestArea[j].Lnum[i];
+        }
+        j++;
+
+    }
+
+    for(int i=0;i<3;i++)
+    {
+        for(int j=0;j<3;j++)
+            cout<<array[i][j];
+        cout<<endl;
+    }
+
+
+    getchar();
+    return 0;
+
     int m =5;
     int it = m -1 ;                         //iterater
     int a = 0;                       // store the RestArea number of SHORT rest
@@ -103,6 +178,6 @@ int main() {
 
     a = it;
     cout<<a<<endl;
-
-    return 0;
+*/
+return 0;
 }

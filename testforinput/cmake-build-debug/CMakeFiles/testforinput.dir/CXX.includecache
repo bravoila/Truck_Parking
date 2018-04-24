@@ -6,7 +6,7 @@
 
 #IncludeRegexTransform: 
 
-/home/bravoila/CLionProjects/testforinput/main.cpp
+/home/bravoila/CLionProjects/Truck_Parking/testforinput/main.cpp
 iostream
 -
 string
@@ -27,12 +27,14 @@ random
 -
 cmath
 -
-fstream
--
 string
 -
 iomanip
 -
 algorithm
+-
+sstream
+-
+string
 -
 
