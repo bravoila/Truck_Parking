@@ -1,0 +1,32 @@
+0 0.1
+1 5.0
+2 10.0
+3 15.0
+4 20.0
+5 25.0 
+6 30.0 
+7 35.0 
+8 40.0 
+9 45.0 
+10 50.0 
+11 55.0 
+12 60.0 
+13 65.0 
+14 70.0 
+15 75.0 
+16 80.0 
+17 85.0
+18 90.0
+19 100.0
+
+19 900.0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+id locat 1 2 3 4 5 6 7 8 9 1 1 2 3 4 5 6 7 8 9 2 1 2 3 4 L 2 3 4 5 6 7 8 9 1 1 2 3 4 5 6 7 8 9 2 1 2 3 4
+
+only location info
+
+
+
+id Snum[24] Lnum[24] location; 
+RestArea[0] location cannot be 0!!, can be 0.1
+the location of last rest area must equals to the length of the segment
+

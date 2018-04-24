@@ -1,0 +1,1 @@
+/usr/bin/c++  -g   CMakeFiles/tp_segment.dir/main.cpp.o  -o tp_segment 
