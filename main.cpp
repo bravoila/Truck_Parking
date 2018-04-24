@@ -10,7 +10,9 @@
 #include <algorithm>
 
 using namespace std;
-default_random_engine e(time(NULL));                            // 定义一个随机数引擎
+//default_random_engine e((unsigned  long) time(nullptr));                           //don't use it anymore,use the following
+random_device rd;// 定义一个随机数引擎,
+mt19937 e(rd());
 uniform_real_distribution<double> u(0, 1);
 
 const double L = 100.0;                       //Total simulation distance unit in mile
@@ -136,8 +138,11 @@ double DrivingTime(double a)
 }
 
 
+
+
 double Arrival() {//custom arrival distribution
         //plot https://www.desmos.com/calculator/7kmkfmqtgp
+
         int xmin = 0;
         int xmax = 24;
         double x = (xmax - xmin) * u(e) + xmin;
@@ -317,9 +322,11 @@ void Truck2RestS(struct TruckPropStru *Truck, struct RestAreaStru RestArea[],vec
 // from rest area to rest area
 void Truck2RestC(struct TruckPropStru *Truck, struct RestAreaStru RestArea[],vector<double> &REE,int m)
 {
-    default_random_engine e;                            // 定义一个随机数引擎
-    lognormal_distribution<double> lgn1(1.5,1.5);
-    lognormal_distribution<double> lgn2(2,0.5);
+    //default_random_engine e((unsigned  long) time(NULL));// 定义一个随机数引擎
+    std::random_device rd;
+    std::mt19937 e(rd());
+    //https://gaomf.cn/2017/03/22/C++_Random/
+
     normal_distribution<double> nor1(7.5,15);   //Normal distribution, use for first driving time
     normal_distribution<double> nor2(2.5,15);   //Normal distribution, use for second driving time
 
@@ -354,7 +361,6 @@ void Truck2RestC(struct TruckPropStru *Truck, struct RestAreaStru RestArea[],vec
 
         a = it;
         cout << "a = "<<a << endl;
-        cout<<"m2 = "<<m<<endl;
 
         //consider preference here or another function in the header file
         //the driver can park at the place he prefer in [0,a], choose the preferred RestArea
@@ -366,7 +372,6 @@ void Truck2RestC(struct TruckPropStru *Truck, struct RestAreaStru RestArea[],vec
         Truck->RN.push_back(PreferS(a));     //rest area for short rest
         Truck->BP.back() = Truck->StartT + (DistER(Truck->Entryd.back(),a,RestArea)+ cir*L) / Truck->speed;
         // short rest time
-        //Truck->RestShort = lgn2(e); rest time distribution truck leaves the RestArea[a], round up
         s1 = int(floor(Truck->BP.back())) ;//Time truck enters the RestArea[a], round down
         s2 = int(ceil(Truck->BP.back() + Truck->RestTime.at(Truck->RestTime.size()-2)));//Time the truck leave the rest area, round up
 
@@ -395,11 +400,15 @@ void Truck2RestC(struct TruckPropStru *Truck, struct RestAreaStru RestArea[],vec
 
 //WARNING!! what if DistRR(a,it,RestArea))= 0?????????
     cir = int(floor((Truck->BP.back() - Truck->BP.at(Truck->BP.size()-2)  - Truck->RestTime.at(Truck->RestTime.size()-2))* Truck->speed)  / L);
+    cout<<"cir "<<cir<<endl;
+
     rem = ((Truck->BP.back() - Truck->BP.at(Truck->BP.size()-2)  - Truck->RestTime.at(Truck->RestTime.size()-2))* Truck->speed - cir*L);
     //change here tomorrow, to lower and upper limit
-    if(rem > 94.9){// this is the max distance = !=L
-        rem = 94.8;
+    cout<<"rem1 "<<rem<<endl;
+    if(rem > DistRR(a,(a + 19) % m,RestArea) ){// this is the max distance between rest area, which !=L. Here (a+19)%m is the previous restarea
+        rem = DistRR(a,(a + 19) % m,RestArea);
     }
+    cout<<"rem2 "<<rem<<endl;
     while(rem > DistRR(a,it,RestArea))
     {//test whether the truck has left the segme
         it = (it + 1) % m ;
@@ -415,9 +424,9 @@ void Truck2RestC(struct TruckPropStru *Truck, struct RestAreaStru RestArea[],vec
     }
 
     cout<<"b = "<<b<<endl;
-    // when outside the segment
-
     Truck->RN.push_back(PreferL(a,b));
+    cout<<"prefer"<<PreferL(a,b)<<endl;
+
 
     Truck->BP.back() = Truck->BP.at(Truck->BP.size()-2) + Truck->RestTime.at(Truck->RestTime.size()-2)  + DistRR(a,b,RestArea) / Truck->speed;
     //Truck->RestLong = 4 + 12*u(e)+0.5;
@@ -441,11 +450,11 @@ int main() {
     ofstream outFile;
     //generate random numbers
     uniform_real_distribution<double> u(0, 1);          // 定义一个范围为0~1的浮点数分布类型
-    default_random_engine e;                            // 定义一个随机数引擎
+    random_device rd;// 定义一个随机数引擎
+    mt19937 e(rd());
     //std::normal_distribution<double> distribution(5.0,2.0);   //normal distribution
-    lognormal_distribution<double> lgn2(1,0.2);  // Log-normal distribution,use for short rest time
+    lognormal_distribution<double> lgn2(0.1,0.1);  // Log-normal distribution,use for short rest time
     //https://www.medcalc.org/manual/log-normal_distribution_functions.php
-    poisson_distribution<int> pos(2.3);   //Poisson distribution
     //https://homepage.divms.uiowa.edu/~mbognar/applets/normal.html
 
     /*Parameters*/
