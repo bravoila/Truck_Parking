@@ -16,7 +16,7 @@ mt19937 e(rd());
 uniform_real_distribution<double> u(0, 1);
 
 const double L = 100.0;                       //Total simulation distance unit in mile
-const int MaxCy = 10;                          // max cycle number run in the simulation
+const int MaxCy = 100;                          // max cycle number run in the simulation
 const int TT = MaxCy*24;                     // total simulation time, 16 = L/v
 
 enum STATUS { DE, DR, SR, PR }; // DE is the default
@@ -119,7 +119,7 @@ double DistER(double i,int j,struct RestAreaStru RestArea[])
     if(RestArea[j].location > i ){
         return RestArea[j].location - i;
     }else if(RestArea[j].location == i){
-        return 0.0001;
+        return 0;
     }else{
         return L + RestArea[j].location - i;
     }
@@ -353,7 +353,8 @@ void Truck2RestC(struct TruckPropStru *Truck, struct RestAreaStru RestArea[],vec
         // the driver can park in order to obey HOS
         // find the parking for short rest
         cir = int(floor((Truck->speed * legal) / L));
-
+        cout<<"(Truck->speed * legal - cir*L "<<(Truck->speed * legal - cir*L)<<endl;
+        cout<<"Truck->speed * legal "<<Truck->speed * legal<<endl;
         while ((Truck->speed * legal - cir*L) < DistER(Truck->Entryd.back(),it,RestArea))
         {
             it --;
