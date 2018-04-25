@@ -27,7 +27,7 @@ Apr 20 2018: Fix some bugs of output csv file and endless loop, more test data n
 	     Change the arrival function to double-head normal distribution so as to mimic real condition.
 	     Needs to figure out why rest area number does not change.
 Apr 23 2018: Test for large data set. Needs to test on other machine. m value is not stabel. Don't know why.
-Apr 24 2018: Change the random generater. Test for L=100. Add the file to simulate segment highway.
+Apr 24 2018: Change the random generater. Test for L=100. Add the file to simulate segment highway, which is in folder tp_segment.
 	     
 
 test
