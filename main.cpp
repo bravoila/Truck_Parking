@@ -641,7 +641,6 @@ int main() {
         cout<<"n = "<<n<<endl;
     }
     //##################################################################################################
-*/
     // re-entr after long rest
     // continue here
     // under construction
