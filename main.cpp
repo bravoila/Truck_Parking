@@ -326,7 +326,7 @@ void Truck2RestC(struct TruckPropStru *Truck, struct RestAreaStru RestArea[],vec
     normal_distribution<double> nor2(2.5,15);   //Normal distribution, use for second driving time
 
     //https://homepage.divms.uiowa.edu/~mbognar/applets/normal.html
-    m = 20;
+    m = 7;
     int it = m - 1;                  //iterator
     int a = 0;                       // store the RestArea number of SHORT rest
     int b = 0;                       // store the RestArea number of LONG rest
@@ -458,7 +458,7 @@ int main() {
     int count = 0;                      // for the count, run times of truck
     int n = 10000;                           //number of trucks to simulate entering from point 0
     int tn = n;                              // total number of trucks to simulate
-    int m = 20;                              // number of rest area
+    int m = 7;                              // number of rest area
     int et = 21;                             // total number of combination of entrance and exit
                         // (assume 5 entr , 5 exit, plus initial entry and final exit) C7_2 = 7x6/(2x1)=21
     int t = 0;                               // time point for print out
@@ -469,7 +469,7 @@ int main() {
 
     RestAreaStru RestArea[m] = {0,0.0,{0},{0}};
 
-    ifstream infile_r("RestA_info3.txt",ios::in);
+    ifstream infile_r("RestA_info6.txt",ios::in);
     if(!infile_r)
     {
         cout << "Error: opening RestArea file fail" << endl;
@@ -542,7 +542,7 @@ int main() {
     for ( i = 0 ; i < n; i++)
     {
         //initialization
-        m = 20;
+        m = 7;
         Truck.speed = 65;  //assume speed is 65 mph
         //################################  Set distributions   ##################################
         Truck.DRbefore = 11*u(e) ;// Driving time before entering the highway
@@ -555,6 +555,7 @@ int main() {
         Truck2RestC(&Truck, RestArea,REE,m);//function
         Truck.Exitd.push_back(RestArea[Truck.RN.back()].location);
         cout<<"!!!!!!!!!!!!!SIZE"<<Truck.BP.size()<<endl;
+        cout<<"############################## n = "<<n <<endl;
 
 
         while(count < MaxCy)
@@ -593,10 +594,13 @@ int main() {
         REE.clear();
         count = 0;
     }
-    outFile<<"Partial OD \n"<<endl;
+
+    /*
+     outFile<<"Partial OD \n"<<endl;
+
 
     // ######################### partial OD ########################################
-/*    for ( l = 0; l < et; l ++)
+    for ( l = 0; l < et; l ++)
     {
         cout<<l<<endl;
         cout<<"================="<<endl;
@@ -615,6 +619,7 @@ int main() {
             Truck.RestTime.push_back(12*u(e)+0.5);
             Truck.Entryd = POD[l].Etd;
             Truck.Exitd = POD[l].Exd;
+
 
 
             outFile <<i<<","<< Truck.StartT <<",";
@@ -644,10 +649,11 @@ int main() {
     // re-entr after long rest
     // continue here
     // under construction
-
+  */
     outFile.close();
+
     //output RestArea
-    outFile.open("RestArea.csv");
+    outFile.open("RestArea6.csv");
     outFile << " Number of trucks in short rest \n" <<endl;
     outFile << "RestArea"<<","<<"Time"<<","<<"Number of trucks"<<endl;
 
@@ -686,7 +692,12 @@ int main() {
         }
         outFile <<endl;
     }
+
+
     outFile.close();
+
+
     return 0;
 }
 
+// change m = , RestA_info, RestArea6.csv
