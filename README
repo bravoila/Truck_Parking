@@ -29,3 +29,4 @@ Apr 20 2018: Fix some bugs of output csv file and endless loop, more test data n
 Apr 23 2018: Test for large data set. Needs to test on other machine. m value is not stabel. Don't know why.
 Apr 24 2018: Change the random generater. Test for L=100. Add the file to simulate segment highway, which is in folder tp_segment.
 May 16 2018: More rest area intervals are tested.( L = 1000) Interval = 50, 100, 150, 200;
+May 17 2018; fix some bugs
