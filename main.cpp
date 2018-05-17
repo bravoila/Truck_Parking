@@ -19,7 +19,7 @@ uniform_real_distribution<double> u(0, 1);
 // change NumRA , RestA_info, Truck_info1.csv, RestArea1.csv
 
 const double L = 1000.0;                       //Total simulation distance unit in mile
-const int NumRA = 5;                                  //number of rest area
+const int NumRA = 100;                                  //number of rest area
 const int MaxCy = 100;                          // max cycle number run in the simulation
 const int TT = MaxCy*24;                     // total simulation time, 16 = L/v
 
@@ -80,7 +80,7 @@ int PreferS(int farest)        // preference,return the preferred parking number
 // consider service and legal driving hour left by far
 {
     int temp = farest;                      // store the preferred restarea in the iteration
-    double Score[20] = {6};      //score of each rest area
+    double Score[100] = {6};      //score of each rest area
     for(int num = 1; num < farest; num++)
     {
         if(Score[num] > Score[farest]) {
@@ -95,7 +95,7 @@ int PreferL(int local, int farest)        // preference,return the preferred par
 // consider service and legal driving hour left by far
 {
     int temp = farest;                      // store the preferred restarea in the iteration
-    double Score[20] = {6};      //Score[m] m value is the same, score of each rest area
+    double Score[100] = {6};      //Score[m] m value is the same, score of each rest area
     for(int num = local + 1; num < farest; num++)
     {
         if(Score[num] > Score[farest]) {
@@ -405,7 +405,7 @@ void Truck2RestC(struct TruckPropStru *Truck, struct RestAreaStru RestArea[],vec
     rem = ((Truck->BP.back() - Truck->BP.at(Truck->BP.size()-2)  - Truck->RestTime.at(Truck->RestTime.size()-2))* Truck->speed - cir*L);
     //change here tomorrow, to lower and upper limit
     cout<<"m1"<<m<<endl;
-    if(rem > DistRR(a,(a + m -1) % m,RestArea) ){// this is the max distance between rest area, which !=L. Here (a+19)%m is the previous restarea
+    if(rem > DistRR(a,(a + m -1) % m,RestArea) ){// this is the max distance between rest area, which !=L. Here (a+ m -1)%m is the previous restarea
         rem = DistRR(a,(a + m -1 ) % m,RestArea);
     }
     cout<<"m2"<<m<<endl;
@@ -469,11 +469,10 @@ int main() {
     vector<double> LDH = {};                 //Legal driving time
     vector<double> REE = {};                 //save leaving time (re-enter point for each truck after long rest)
     //initialization
-    double test=0;
 
     RestAreaStru RestArea[m] = {0,0.0,{0},{0}};
 
-    ifstream infile_r("RestA_info4.txt",ios::in);
+    ifstream infile_r("RestA_info01.txt",ios::in);
     if(!infile_r)
     {
         cout << "Error: opening RestArea file fail" << endl;
@@ -532,7 +531,7 @@ int main() {
     //###############################################
 */
 
-    outFile.open("Truck_info4.csv",ios::out);
+    outFile.open("Truck_info01.csv",ios::out);
     outFile << std::setprecision(2) << std::fixed; // keep two decimals
     //print title
     outFile <<"TruckNum"<<","<<"StartT"<<","\
@@ -657,7 +656,7 @@ int main() {
     outFile.close();
 
     //output RestArea
-    outFile.open("RestArea4.csv");
+    outFile.open("RestArea01.csv");
     outFile << " Number of trucks in short rest \n" <<endl;
     outFile << "RestArea"<<","<<"Time"<<","<<"Number of trucks"<<endl;
 
