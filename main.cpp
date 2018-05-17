@@ -700,4 +700,5 @@ int main() {
     return 0;
 }
 
+// for data generation
 // change m = , RestA_info, RestArea6.csv
