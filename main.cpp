@@ -15,7 +15,11 @@ random_device rd;// 定义一个随机数引擎,
 mt19937 e(rd());
 uniform_real_distribution<double> u(0, 1);
 
-const double L = 100.0;                       //Total simulation distance unit in mile
+// for data generation
+// change NumRA , RestA_info, Truck_info1.csv, RestArea1.csv
+
+const double L = 1000.0;                       //Total simulation distance unit in mile
+const int NumRA = 5;                                  //number of rest area
 const int MaxCy = 100;                          // max cycle number run in the simulation
 const int TT = MaxCy*24;                     // total simulation time, 16 = L/v
 
@@ -326,7 +330,7 @@ void Truck2RestC(struct TruckPropStru *Truck, struct RestAreaStru RestArea[],vec
     normal_distribution<double> nor2(2.5,15);   //Normal distribution, use for second driving time
 
     //https://homepage.divms.uiowa.edu/~mbognar/applets/normal.html
-    m = 7;
+    m = NumRA;
     int it = m - 1;                  //iterator
     int a = 0;                       // store the RestArea number of SHORT rest
     int b = 0;                       // store the RestArea number of LONG rest
@@ -400,11 +404,11 @@ void Truck2RestC(struct TruckPropStru *Truck, struct RestAreaStru RestArea[],vec
 
     rem = ((Truck->BP.back() - Truck->BP.at(Truck->BP.size()-2)  - Truck->RestTime.at(Truck->RestTime.size()-2))* Truck->speed - cir*L);
     //change here tomorrow, to lower and upper limit
-    cout<<"rem1 "<<rem<<endl;
-    if(rem > DistRR(a,(a + 19) % m,RestArea) ){// this is the max distance between rest area, which !=L. Here (a+19)%m is the previous restarea
-        rem = DistRR(a,(a + 19) % m,RestArea);
+    cout<<"m1"<<m<<endl;
+    if(rem > DistRR(a,(a + m -1) % m,RestArea) ){// this is the max distance between rest area, which !=L. Here (a+19)%m is the previous restarea
+        rem = DistRR(a,(a + m -1 ) % m,RestArea);
     }
-    cout<<"rem2 "<<rem<<endl;
+    cout<<"m2"<<m<<endl;
     while(rem > DistRR(a,it,RestArea))
     {//test whether the truck has left the segme
         it = (it + 1) % m ;
@@ -458,7 +462,7 @@ int main() {
     int count = 0;                      // for the count, run times of truck
     int n = 10000;                           //number of trucks to simulate entering from point 0
     int tn = n;                              // total number of trucks to simulate
-    int m = 7;                              // number of rest area
+    int m = NumRA;                              // number of rest area
     int et = 21;                             // total number of combination of entrance and exit
                         // (assume 5 entr , 5 exit, plus initial entry and final exit) C7_2 = 7x6/(2x1)=21
     int t = 0;                               // time point for print out
@@ -469,7 +473,7 @@ int main() {
 
     RestAreaStru RestArea[m] = {0,0.0,{0},{0}};
 
-    ifstream infile_r("RestA_info6.txt",ios::in);
+    ifstream infile_r("RestA_info4.txt",ios::in);
     if(!infile_r)
     {
         cout << "Error: opening RestArea file fail" << endl;
@@ -528,7 +532,7 @@ int main() {
     //###############################################
 */
 
-    outFile.open("Truck.csv",ios::out);
+    outFile.open("Truck_info4.csv",ios::out);
     outFile << std::setprecision(2) << std::fixed; // keep two decimals
     //print title
     outFile <<"TruckNum"<<","<<"StartT"<<","\
@@ -542,7 +546,7 @@ int main() {
     for ( i = 0 ; i < n; i++)
     {
         //initialization
-        m = 7;
+        m = NumRA;
         Truck.speed = 65;  //assume speed is 65 mph
         //################################  Set distributions   ##################################
         Truck.DRbefore = 11*u(e) ;// Driving time before entering the highway
@@ -653,7 +657,7 @@ int main() {
     outFile.close();
 
     //output RestArea
-    outFile.open("RestArea6.csv");
+    outFile.open("RestArea4.csv");
     outFile << " Number of trucks in short rest \n" <<endl;
     outFile << "RestArea"<<","<<"Time"<<","<<"Number of trucks"<<endl;
 
@@ -700,5 +704,4 @@ int main() {
     return 0;
 }
 
-// for data generation
-// change m = , RestA_info, RestArea6.csv
+
