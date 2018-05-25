@@ -19,7 +19,7 @@ uniform_real_distribution<double> u(0, 1);
 // change NumRA , RestA_info, Truck_info1.csv, RestArea1.csv
 
 const double L = 1000.0;                       //Total simulation distance unit in mile
-const int NumRA = 100;                                  //number of rest area
+const int NumRA = 20;                                  //number of rest area
 const int MaxCy = 100;                          // max cycle number run in the simulation
 const int TT = MaxCy*24;                     // total simulation time, 16 = L/v
 
@@ -439,6 +439,7 @@ void Truck2RestC(struct TruckPropStru *Truck, struct RestAreaStru RestArea[],vec
         //consider change Lnum to vector;!!!!!!!!!!!!!!!!1
     }
 
+
     REE.push_back(Truck->BP.back() + Truck->RestTime.back());  //save leaving time (re-enter after long rest)###############################################
 }
 
@@ -472,7 +473,7 @@ int main() {
 
     RestAreaStru RestArea[m] = {0,0.0,{0},{0}};
 
-    ifstream infile_r("RestA_info01.txt",ios::in);
+    ifstream infile_r("RestA_info1.txt",ios::in);
     if(!infile_r)
     {
         cout << "Error: opening RestArea file fail" << endl;
@@ -531,7 +532,7 @@ int main() {
     //###############################################
 */
 
-    outFile.open("Truck_info01.csv",ios::out);
+    outFile.open("Truck_info1s80.csv",ios::out);
     outFile << std::setprecision(2) << std::fixed; // keep two decimals
     //print title
     outFile <<"TruckNum"<<","<<"StartT"<<","\
@@ -546,7 +547,7 @@ int main() {
     {
         //initialization
         m = NumRA;
-        Truck.speed = 65;  //assume speed is 65 mph
+        Truck.speed = 80;  //assume speed is 65 mph
         //################################  Set distributions   ##################################
         Truck.DRbefore = 11*u(e) ;// Driving time before entering the highway
         Truck.StartT = Arrival(); //Arrival function at entrance. In the future it can be replaced by traffic flow function
@@ -656,7 +657,7 @@ int main() {
     outFile.close();
 
     //output RestArea
-    outFile.open("RestArea01.csv");
+    outFile.open("RestArea1s80.csv");
     outFile << " Number of trucks in short rest \n" <<endl;
     outFile << "RestArea"<<","<<"Time"<<","<<"Number of trucks"<<endl;
 
