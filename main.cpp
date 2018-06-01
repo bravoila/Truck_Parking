@@ -532,7 +532,7 @@ int main() {
     //###############################################
 */
 
-    outFile.open("Truck_info1s80.csv",ios::out);
+    outFile.open("Truck_info1s65.csv",ios::out);
     outFile << std::setprecision(2) << std::fixed; // keep two decimals
     //print title
     outFile <<"TruckNum"<<","<<"StartT"<<","\
@@ -547,7 +547,7 @@ int main() {
     {
         //initialization
         m = NumRA;
-        Truck.speed = 80;  //assume speed is 65 mph
+        Truck.speed = 65;  //assume speed is 65 mph
         //################################  Set distributions   ##################################
         Truck.DRbefore = 11*u(e) ;// Driving time before entering the highway
         Truck.StartT = Arrival(); //Arrival function at entrance. In the future it can be replaced by traffic flow function
@@ -657,7 +657,7 @@ int main() {
     outFile.close();
 
     //output RestArea
-    outFile.open("RestArea1s80.csv");
+    outFile.open("RestArea1s65.csv");
     outFile << " Number of trucks in short rest \n" <<endl;
     outFile << "RestArea"<<","<<"Time"<<","<<"Number of trucks"<<endl;
 
