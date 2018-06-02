@@ -354,9 +354,17 @@ void Truck2RestC(struct TruckPropStru *Truck, struct RestAreaStru RestArea[],vec
         cir = int(floor((Truck->speed * legal) / L));
         cout<<"(Truck->speed * legal - cir*L "<<(Truck->speed * legal - cir*L)<<endl;
         cout<<"Truck->speed * legal "<<Truck->speed * legal<<endl;
-        while ((Truck->speed * legal - cir*L) < DistER(Truck->Entryd.back(),it,RestArea))
+
+
+        for(int i = 0; i < NumRA; i++){
+            if(DistER(Truck->Entryd.back(), i ,RestArea) == 0){
+                it = (i + m -1) % m;
+            }
+        }
+
+        while (((Truck->speed * legal - cir*L) < DistER(Truck->Entryd.back(),it,RestArea)))
         {
-            it --;
+            it = (it + m -1) % m;
         };
 
         a = it;
