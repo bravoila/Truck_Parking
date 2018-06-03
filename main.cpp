@@ -481,7 +481,7 @@ int main() {
 
     RestAreaStru RestArea[m] = {0,0.0,{0},{0}};
 
-    ifstream infile_r("RestA_info1.txt",ios::in);
+    ifstream infile_r("RestA_info50.txt",ios::in);
     if(!infile_r)
     {
         cout << "Error: opening RestArea file fail" << endl;
@@ -540,7 +540,7 @@ int main() {
     //###############################################
 */
 
-    outFile.open("Truck_info1s65.csv",ios::out);
+    outFile.open("Truck_info50.csv",ios::out);
     outFile << std::setprecision(2) << std::fixed; // keep two decimals
     //print title
     outFile <<"TruckNum"<<","<<"StartT"<<","\
@@ -665,7 +665,7 @@ int main() {
     outFile.close();
 
     //output RestArea
-    outFile.open("RestArea1s65.csv");
+    outFile.open("RestArea50.csv");
     outFile << " Number of trucks in short rest \n" <<endl;
     outFile << "RestArea"<<","<<"Time"<<","<<"Number of trucks"<<endl;
 
