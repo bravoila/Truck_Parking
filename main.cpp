@@ -139,6 +139,8 @@ double DrivingTime(double a)
     };
 }
 
+//////////////////////////////////////////////////////used for spacing and speed /////////////////////////////////////
+
 double Arrival() {//custom arrival distribution
         //plot https://www.desmos.com/calculator/7kmkfmqtgp
 
@@ -163,6 +165,51 @@ double Arrival() {//custom arrival distribution
             Arrival();// in case to return random number to main function
         }
     }
+
+//////////////////////// one-head normal distribution arrival///////////////////////////////////////
+/*
+double Arrival() {//custom arrival distribution
+    //plot https://www.desmos.com/calculator/7kmkfmqtgp
+
+    int xmin = 0;
+    int xmax = 24;
+    double x = (xmax - xmin) * u(e) + xmin;
+    double mean1 = 13;
+    double sigma1 = 4.5;
+
+    double fx = 1.0 / (pow((2 * M_PI), 0.5) * sigma1) * exp(-(pow((x - mean1), 2) / (2 * sigma1 * sigma1)));
+    double ymax = 0.0886538;//see the plot, max y value
+    double ymin = 0;
+    double Y = (ymax - ymin) * u(e) - ymin;
+    if (Y <= fx && x <=24.0 && x > 0.0) {
+        std::cout<<x<<std::endl;
+        return x;
+    }else{
+        Arrival();// in case to return random number to main function
+    }
+}
+*/
+/////////////////////////////uniform distribution///////////////////////////////////////////////////////////
+/*
+double Arrival() {//custom arrival distribution
+    //plot https://www.desmos.com/calculator/7kmkfmqtgp
+
+    int xmin = 0;
+    int xmax = 24;
+    double x = (xmax - xmin) * u(e) + xmin;
+
+    double fx = 1.0 / 20;
+    double ymax = 1.0 / 20;//see the plot, max y value
+    double ymin = 0;
+    double Y = (ymax - ymin) * u(e) - ymin;
+    if (Y <= fx && x <=24.0 && x > 0.0) {
+        std::cout<<x<<std::endl;
+        return x;
+    }else{
+        Arrival();// in case to return random number to main function
+    }
+}
+*/
 
 /*################################  Truck2Rest Function   ##################################*/
 
