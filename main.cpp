@@ -373,8 +373,8 @@ void Truck2RestC(struct TruckPropStru *Truck, struct RestAreaStru RestArea[],vec
     std::mt19937 e(rd());
     //https://gaomf.cn/2017/03/22/C++_Random/
 
-    normal_distribution<double> nor1(7.5,15);   //Normal distribution, use for first driving time
-    normal_distribution<double> nor2(2.5,15);   //Normal distribution, use for second driving time
+    normal_distribution<double> nor1(7.5,15);   //Normal distribution, use for first driving time 7.5,15
+    normal_distribution<double> nor2(2.5,15);   //Normal distribution, use for second driving time 2.5,15
 
     //https://homepage.divms.uiowa.edu/~mbognar/applets/normal.html
     m = NumRA;
@@ -483,7 +483,7 @@ void Truck2RestC(struct TruckPropStru *Truck, struct RestAreaStru RestArea[],vec
     cout<<"prefer"<<PreferL(a,b)<<endl;
 
     Truck->BP.back() = Truck->BP.at(Truck->BP.size()-2) + Truck->RestTime.at(Truck->RestTime.size()-2)  + DistRR(a,b,RestArea) / Truck->speed;
-    //Truck->RestLong = 4 + 12*u(e)+0.5;
+
 
     s1 = int(floor(Truck->BP.back()));//Time truck enters the RestArea[b], round down
     s2 = int(ceil(Truck->BP.back() + Truck->RestTime.back()));//Time truck leaves the RestArea[b]
@@ -507,7 +507,11 @@ int main() {
     random_device rd;// 定义一个随机数引擎
     mt19937 e(rd());
     //std::normal_distribution<double> distribution(5.0,2.0);   //normal distribution
-    lognormal_distribution<double> lgn2(0.1,0.1);  // Log-normal distribution,use for short rest time
+    lognormal_distribution<double> lgn2(0.1,0.1);  // Log-normal distribution,use for short rest time //default
+    //lognormal_distribution<double> lgn3(2,0.1);
+    //normal_distribution<double> norm1(4,1);
+
+    //normal_distribution<double> nor1()
     //https://www.medcalc.org/manual/log-normal_distribution_functions.php
     //https://homepage.divms.uiowa.edu/~mbognar/applets/normal.html
 
@@ -607,8 +611,8 @@ int main() {
         Truck.DRbefore = 11*u(e) ;// Driving time before entering the highway
         Truck.StartT = Arrival(); //Arrival function at entrance. In the future it can be replaced by traffic flow function
         // short and long rest time
-        Truck.RestTime.push_back(lgn2(e));// rest time distribution truck leaves the RestArea[a], round up
-        Truck.RestTime.push_back(11*u(e)+0.5);
+        Truck.RestTime.push_back(lgn2(e));// rest time distribution truck leaves the RestArea[a], round up default lgn2(e)
+        Truck.RestTime.push_back(11*u(e)+0.5);//11*u(e)+0.5
         Truck.Entryd.push_back(0.1);
         outFile <<i<<","<< Truck.StartT <<",";
         Truck2RestC(&Truck, RestArea,REE,m);//function
@@ -625,7 +629,7 @@ int main() {
             //in the future u(e) can be replaced by traffic flow function
             // short and long rest time
             Truck.RestTime.push_back(lgn2(e));// rest time distribution truck leaves the RestArea[a], round up
-            Truck.RestTime.push_back(11*u(e)+0.5);
+            Truck.RestTime.push_back(11*u(e)+0.5);//11*u(e)+0.5
             Truck.Entryd.push_back(RestArea[Truck.RN.back()].location);
             Truck2RestC(&Truck, RestArea,REE,m);//function
             Truck.Exitd.push_back(RestArea[Truck.RN.back()].location);
