@@ -147,10 +147,10 @@ double Arrival() {//custom arrival distribution
         int xmin = 0;
         int xmax = 24;
         double x = (xmax - xmin) * u(e) + xmin;
-        double mean1 = 8;
-        double sigma1 = 1;
-        double mean2 = 14;
-        double sigma2 = 3.5;
+        double mean1 = 9;
+        double sigma1 = 2;
+        double mean2 = 16;
+        double sigma2 = 4;
         double k1 = 0.5;
         double k2 = 0.5;
         double fx = k1 / (pow((2 * M_PI), 0.5) * sigma1) * exp(-(pow((x - mean1), 2) / (2 * sigma1 * sigma1))) +
@@ -373,8 +373,8 @@ void Truck2RestC(struct TruckPropStru *Truck, struct RestAreaStru RestArea[],vec
     std::mt19937 e(rd());
     //https://gaomf.cn/2017/03/22/C++_Random/
 
-    normal_distribution<double> nor1(7.5,15);   //Normal distribution, use for first driving time 7.5,15
-    normal_distribution<double> nor2(2.5,15);   //Normal distribution, use for second driving time 2.5,15
+    normal_distribution<double> nor1(7.5,0.5);   //Normal distribution, use for first driving time 7.5,15
+    normal_distribution<double> nor2(2.5,0.5);   //Normal distribution, use for second driving time 2.5,15
 
     //https://homepage.divms.uiowa.edu/~mbognar/applets/normal.html
     m = NumRA;
@@ -612,7 +612,7 @@ int main() {
         Truck.StartT = Arrival(); //Arrival function at entrance. In the future it can be replaced by traffic flow function
         // short and long rest time
         Truck.RestTime.push_back(lgn2(e));// rest time distribution truck leaves the RestArea[a], round up default lgn2(e)
-        Truck.RestTime.push_back(11*u(e)+0.5);//11*u(e)+0.5
+        Truck.RestTime.push_back(5*u(e)+10);//11*u(e)+0.5 is not right should be 5u+ 10( at least 10 hour rest)
         Truck.Entryd.push_back(0.1);
         outFile <<i<<","<< Truck.StartT <<",";
         Truck2RestC(&Truck, RestArea,REE,m);//function
@@ -629,7 +629,7 @@ int main() {
             //in the future u(e) can be replaced by traffic flow function
             // short and long rest time
             Truck.RestTime.push_back(lgn2(e));// rest time distribution truck leaves the RestArea[a], round up
-            Truck.RestTime.push_back(11*u(e)+0.5);//11*u(e)+0.5
+            Truck.RestTime.push_back(5*u(e)+10);//11*u(e)+0.5
             Truck.Entryd.push_back(RestArea[Truck.RN.back()].location);
             Truck2RestC(&Truck, RestArea,REE,m);//function
             Truck.Exitd.push_back(RestArea[Truck.RN.back()].location);
@@ -728,7 +728,7 @@ int main() {
         {
             outFile <<t<<"," ;
             if(t % 24 == 0 && t !=0){
-                outFile << " day "<< int(floor(t/24))<<",";
+                outFile << " day"<< int(floor(t/24))<<",";
             }
             //cout << t << " Number of trucks in long rest in rest area " << j << " is " << RestArea[j].Lnum[t] << endl;
         }
@@ -738,7 +738,7 @@ int main() {
         {
             outFile <<RestArea[j].Snum[t]<<"," ;
             if(t % 24 == 0 && t !=0){
-                outFile << " day "<< int(floor(t/24))<<",";
+                outFile << " day"<< int(floor(t/24))<<",";
             }
             //cout << t << " Number of trucks in long rest in rest area " << j << " is " << RestArea[j].Lnum[t] << endl;
         }

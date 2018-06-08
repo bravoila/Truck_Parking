@@ -37,4 +37,5 @@ Jun 03 2018: Try different speed: 50,55,60,65,70,75,80,85 under 50 mile spacing 
 	     Bug fixed
 Jun 04 2018: Try different arrival distribution: double-head normal, normal and unifrom.
 Jun 06 2018: Try different short/long driving time distribution and short/long rest time distribtuion. 
+Jun 08 2018: Bug fixed.
 
