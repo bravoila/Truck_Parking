@@ -19,7 +19,7 @@ uniform_real_distribution<double> u(0, 1);
 // change NumRA , RestA_info, Truck_info1.csv, RestArea1.csv
 
 const double L = 1000.0;                       //Total simulation distance unit in mile
-const int NumRA = 20;                                  //number of rest area
+const int NumRA = 10;                                  //number of rest area
 const int MaxCy = 100;                          // max cycle number run in the simulation
 const int TT = MaxCy*24;                     // total simulation time, 16 = L/v
 
@@ -552,7 +552,7 @@ int main() {
 
     RestAreaStru RestArea[m] = {0,0.0,{0},{0}};
 
-    ifstream infile_r("RestA_info50.txt",ios::in);
+    ifstream infile_r("RestA_info502.txt",ios::in);
     if(!infile_r)
     {
         cout << "Error: opening RestArea file fail" << endl;
@@ -611,7 +611,7 @@ int main() {
     //###############################################
 */
 
-    outFile.open("Truck_info50.csv",ios::out);
+    outFile.open("Truck_info502.csv",ios::out);
     outFile << std::setprecision(2) << std::fixed; // keep two decimals
     //print title
     outFile <<"TruckNum"<<","<<"StartT"<<","\
@@ -737,7 +737,7 @@ int main() {
     outFile.close();
 
     //output RestArea
-    outFile.open("RestArea50.csv");
+    outFile.open("RestArea502.csv");
     outFile << " Number of trucks in short rest \n" <<endl;
     outFile << "RestArea"<<","<<"Time"<<","<<"Number of trucks"<<endl;
 
